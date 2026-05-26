@@ -44,6 +44,7 @@ LOG_MAX_BACKUPS = 100
 # Remaining log backup files before user is warned. Set to -1 to disable checking.
 LOG_MAX_WARN_THRESHOLD = 3
 
+
 """
 Score sorting
 0: Sort by index (Default)

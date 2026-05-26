@@ -68,8 +68,10 @@ Alternate normalisation method
 def max_abs_norm(data):
     # Max absolute value in each column
     col_max_abs = np.max(np.abs(data), axis=0)
+
     # Avoid dividing by 0 in all 0 column
     col_max_abs[col_max_abs == 0] = 1.0
+
     # Divide each element in a column by that column's max absolute value
     normalized_data = data / col_max_abs
     return normalized_data

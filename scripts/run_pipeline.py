@@ -38,6 +38,7 @@ def run_full_pipeline(args, logger):
         check_log_rotation_limits(LOG_FILE)
 
 
+
 def log_failure(e, logger):
         logger.critical(f"\nExiting data pipeline due to error: {e}")
         logger.info(f"{e}", exc_info=True)

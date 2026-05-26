@@ -67,6 +67,7 @@ def init_logging(log_file, verbose=False, debug=False, quiet=False):
     logger.addHandler(file_handler)
 
     logger.propagate = False
+
     logger.debug("\t✔️  Successfully set up logger. ")
     logger.debug(f"\tConsole level: {logging.getLevelName(console_level)}")
     logger.debug(f"\tFile level: {logging.getLevelName(file_level)}")
@@ -125,6 +126,7 @@ def set_raw_data(new_totals):
     config.logger.debug(f"\t✔️  Set raw totals: {config.totals}")
     config.logger.debug(f"\t✔️  Set scenario names: {config.scenarios}")
 
+
 def get_scenarios():
     return config.scenarios
 
@@ -135,6 +137,7 @@ def get_totals():
 def set_attributes_norm(new_attributes_norm):
     config.attributes_norm = new_attributes_norm
     config.logger.debug(f"\t✔️  Set attributes_norm: {config.attributes_norm}")
+
 
 def get_attributes_norm():
     return config.attributes_norm
@@ -159,6 +162,7 @@ def create_dirs():
     config.logger.debug(f"\t✔️  Processed data:{config.PROCESSED_DIR}")
     config.logger.debug(f"\t✔️  PNG images: {config.PNG_DIR}")
 
+
 def setup_totals_file():
     with open(config.TOTALS_FILEPATH, "w", newline="", encoding="utf-8") as savetotals:
         writer = csv.DictWriter(savetotals, fieldnames=config.HEADERS)
@@ -171,6 +175,7 @@ def setup_totals_file():
 # Throws JSONDecodeError if unsuccessful
 def load_json(file_path):
     config.logger.info(f"\tReading data from {file_path}")
+
     if not os.path.exists(file_path):
         return
     with open(file_path, "r", encoding="utf-8") as file:
@@ -181,6 +186,7 @@ def write_to_csv(filepath, data):
     base_name = os.path.basename(filepath)
     csv_filename = f"{config.RAW_DIR}/{base_name}_raw.csv"
     config.logger.debug(f"\tWriting data to CSV {csv_filename}")
+
 
     if not os.path.exists(config.RAW_DIR):
         logger.debug(f"WARN: Expected {config.RAW_DIR} to already exist. Did you run init_pipeline()?")
@@ -238,6 +244,7 @@ def write_scores_to_csv(filepath, scenario_scores):
     config.logger.debug(f"\t✔️  Weighted scores written to:\n\t{output_filepath}")
 
 
+
 """-------------------------
     Validation utils
 -------------------------"""
@@ -256,6 +263,7 @@ def validate_crct_json(json):
         raise ValueError("Invalid CRCT JSON project file, missing 'area' name.")
     config.logger.info("\t✔️  Verified CRTC project JSON file")
     return True
+
 
 def validate_weights():
     if not np.isclose(config.WEIGHTS.sum(), 1.0):

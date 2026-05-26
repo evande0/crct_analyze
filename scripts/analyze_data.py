@@ -127,6 +127,7 @@ def plot_scores(scenario_scores):
 
         logger.info(f"\t✔️  Chart successfully saved to {png_file}")
 
+
     except Exception as e:
         logger.error(f"Failed to generate plot: {e}", exc_info=True)
 
@@ -160,6 +161,7 @@ def plot_weights(attributes, weights):
 
         logger.info(f"\t✔️  Chart successfully saved to {png_file}")
 
+
     except Exception as e:
         logger.error(f"Failed to generate plot: {e}", exc_info=True)
 
@@ -190,6 +192,7 @@ def plot_radar_charts(scenarios, A, attributes, showradar):
         plot_radar(ax, attributes, fig_title, angles, showradar)
 
     logger.debug("\t✔️  Finished generating radar charts")
+
 
 
 def plot_values(ax, label, values, angles):

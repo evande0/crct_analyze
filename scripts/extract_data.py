@@ -55,11 +55,13 @@ def extract_data(filepath):
     utils.write_to_csv(filepath, project_data)
 
     logger.info(f"\t✔️  Finished extracting data from {os.path.basename(filepath)}.")
+
     return totals
 
 
 def get_rows(data):
     logger.debug("⏳Getting rows from data...")
+
     rows = []
     for area in data["areas"]:
         props = area.get("properties", {})
@@ -99,6 +101,7 @@ def append_to_totals_csv(totals):
         writer = csv.DictWriter(savetotals, fieldnames=HEADERS)
         writer.writerow(totals)
     logger.info(f"\t✔️  Appended scenario totals to {TOTALS_FILENAME}")
+
 
 
 def get_next(iterable):
