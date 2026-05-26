@@ -1,0 +1,270 @@
+import config
+from datetime import datetime
+from pathlib import Path
+import csv
+import glob
+import json
+import logging
+import numpy as np
+import os
+import shutil
+import sys
+
+
+"""-------------------------------
+    Logging
+----------------------------------"""
+def set_logger(new_logger):
+    config.logger = new_logger
+
+def get_logger():
+    return config.logger
+
+def init_logging(log_file, verbose=False, debug=False, quiet=False):
+    if not os.path.exists(config.LOG_DIR):
+        os.mkdir(config.LOG_DIR)
+    logger = logging.getLogger(config.LOGGER_NAME)
+    logger.setLevel(logging.DEBUG)
+
+    # Clear existing handlers if any (prevents double-logging)
+    if logger.hasHandlers():
+        logger.handlers.clear()
+
+    # Set Log Levels
+    if quiet:
+        console_level = logging.CRITICAL
+    elif verbose:
+        console_level = logging.INFO
+    elif debug:
+        console_level = logging.DEBUG
+    else:
+        console_level = logging.WARNING
+    file_level = logging.DEBUG
+
+    # Set format
+    file_format = logging.Formatter(config.LOG_FILE_FORMAT)
+    if debug and verbose:
+        console_format = file_format
+    else:
+        console_format = logging.Formatter(config.LOG_CONSOLE_FORMAT)
+
+    # Set handlers
+    console_handler = logging.StreamHandler(sys.stdout)
+    file_handler = logging.FileHandler(log_file)
+
+    console_handler.setLevel(console_level)
+    console_handler.setFormatter(console_format)
+    logger.addHandler(console_handler)
+
+    file_handler.setLevel(file_level)
+    file_handler.setFormatter(file_format)
+    logger.addHandler(file_handler)
+
+    logger.propagate = False
+    logger.debug("Successfully set up logger. ")
+    logger.debug("Console level: {logging.getLevelName(console_level)}")
+    logger.debug("File level: {logging.getLevelName(file_level)}")
+
+    return logger
+
+def consolidate_logs(verbose):
+    pattern = os.path.join(config.LOG_DIR, "DataPipeline_*.log")
+    output_filename = os.path.join(config.LOG_DIR, "DataPipeline.log")
+    log_files = sorted(glob.glob(pattern))
+    mode = "ab" if os.path.exists(output_filename) else "wb"
+
+    if not log_files:
+        if verbose:
+            print(f"No files matching 'pipeline_*.log' found in {config.LOG_DIR}.")
+        return
+
+    # Use 'wb' (write binary) for a direct byte-for-byte copy
+    with open(output_filename, mode) as outfile:
+        for fname in log_files:
+            header = f"\n===== {os.path.basename(fname)} =====\n\n"
+            outfile.write(header.encode('utf-8'))
+            with open(fname, 'rb') as infile:
+                outfile.write(b'{fname}')
+                shutil.copyfileobj(infile, outfile)
+                os.remove(fname)
+    if verbose:
+        print(f"Successfully consolidated {len(log_files)} files into {output_filename}")
+
+"""-------------------------------
+    Set/Get saved data from config
+----------------------------------"""
+
+""" Raw data from project files """
+def set_raw_data(new_totals):
+    all_totals = []
+    scenarios = []
+    for scenario in new_totals:
+        scenarios.append(scenario["Name"])
+        totals = []
+        for attr in config.ATTRIBUTES_LIST:
+            totals.append(scenario[attr])
+        all_totals.append(totals)
+    config.scenarios = scenarios
+    config.totals = all_totals
+    config.logger.debug(f"Set raw totals: {config.totals}")
+    config.logger.debug(f"Set scenario names: {config.scenarios}")
+
+def get_scenarios():
+    return config.scenarios
+
+def get_totals():
+    return config.totals
+
+""" Normalized data """
+def set_attributes_norm(new_attributes_norm):
+    config.attributes_norm = new_attributes_norm
+    config.logger.debug(f"set attributes_norm: {config.attributes_norm}")
+
+def get_attributes_norm():
+    return config.attributes_norm
+
+
+"""-------------------------
+    Directory init
+-------------------------"""
+def create_dirs():
+    os.makedirs(config.PROJ_DIR, exist_ok=True)
+    os.makedirs(config.SAVE_DIR, exist_ok=True)
+    os.makedirs(config.LOG_DIR, exist_ok=True)
+    os.makedirs(config.RAW_DIR, exist_ok=True)
+    os.makedirs(config.PROCESSED_DIR, exist_ok=True)
+    os.makedirs(config.PNG_DIR, exist_ok=True)
+
+    config.logger.debug("Created directories for pipeline artifacts")
+    config.logger.debug(f"Project directory: {config.PROJ_DIR}")
+    config.logger.debug(f"Save directory: {config.SAVE_DIR}")
+    config.logger.debug(f"Log files: {config.LOG_DIR}")
+    config.logger.debug(f"Raw data: {config.RAW_DIR}")
+    config.logger.debug(f"Processed data:{config.PROCESSED_DIR}")
+    config.logger.debug(f"PNG images: {config.PNG_DIR}")
+
+def setup_totals_file():
+    with open(config.TOTALS_FILEPATH, "w", newline="", encoding="utf-8") as savetotals:
+        writer = csv.DictWriter(savetotals, fieldnames=config.HEADERS)
+        writer.writeheader()
+    config.logger.debug(f"Created CSV for totals: {config.TOTALS_FILEPATH}")
+
+"""-------------------------
+    JSON & CSV utils
+-------------------------"""
+# Throws JSONDecodeError if unsuccessful
+def load_json(file_path):
+    config.logger.info(f"Reading data from {file_path}")
+    if not os.path.exists(file_path):
+        return
+    with open(file_path, "r", encoding="utf-8") as file:
+        return json.load(file)
+
+
+def write_to_csv(filepath, data):
+    base_name = os.path.basename(filepath)
+    csv_filename = f"{config.RAW_DIR}/{base_name}_raw.csv"
+    config.logger.debug("Writing data to CSV {csv_filename}")
+
+    if not os.path.exists(config.RAW_DIR):
+        logger.debug(f"WARN: Expected {config.RAW_DIR} to already exist. Did you run init_pipeline()?")
+        os.mkdir(config.RAW_DIR)
+    with open(csv_filename, "w", newline="", encoding="utf-8") as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=config.HEADERS)
+        writer.writeheader()
+        writer.writerows(data)
+    config.logger.info(f"....Saved raw data to {os.path.basename(filepath)}")
+
+def load_totals_csv(filepath):
+    config.logger.debug(f"...Loading totals CSV")
+    scenarios = []
+    matrix = []
+
+    with open(filepath, "r", encoding="utf-8") as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            scenarios.append(row.get("Name", ""))
+            values = []
+            for attr in config.ATTRIBUTES_LIST:
+                value = float(row.get(attr, 0.0))
+                values.append(value)
+            matrix.append(values)
+    A = np.array(matrix, dtype=float)
+    config.logger.debug(f"...Loaded attributes matrix with shape {A.shape}")
+    return scenarios, A
+
+def sort_csv(filepath, sort_col, has_headers):
+    config.logger.debug(f"...Sorting CSV file {filepath} by column {sort_col}")
+    with open(filepath, mode='r', newline='', encoding='utf-8') as f:
+        reader = csv.reader(f)
+        if has_headers:
+            header = next(reader)  # Save the header row
+        data = list(reader)    # Load the remaining rows into a list
+
+    # Sort rows by the specified column
+    data.sort(key=lambda x: x[sort_col])
+
+    # Overwrites the original file
+    with open(filepath, mode='w', newline='', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        writer.writerow(header)
+        writer.writerows(data)
+
+def write_scores_to_csv(filepath, scenario_scores):
+    directory = os.path.dirname(filepath)
+    output_filename = f"weighted_scores.csv"
+    output_filepath = f"{directory}/{output_filename}"
+    with open(output_filepath, "w", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        writer.writerow(["Scenario", "WeightedScore"])
+        for scenario, score in scenario_scores:
+            writer.writerow([scenario, round(float(score), 4)])
+    config.logger.debug(f"Weighted scores written to:\n\t{output_filepath}")
+
+
+"""-------------------------
+    Validation utils
+-------------------------"""
+
+def validate_filepath(filepath, expected_type):
+    if not filepath.lower().endswith(expected_type):
+        config.logger.error(f"...ERROR: Specified filepath is not a CSV.")
+        raise TypeError("Specified filepath is not a CSV.")
+    if not os.path.exists(filepath):
+        config.logger.error(f"....ERROR: File '{filepath}' does not exist.")
+        raise ValueError("File '{filepath}' does not exist.")
+    return True
+
+def validate_crct_json(json):
+    if "areas" not in json or not isinstance(json["areas"], list):
+        raise ValueError("Invalid CRCT JSON project file, missing 'area' name.")
+    config.logger.info("....Verified CRTC project JSON file")
+    return True
+
+def validate_weights():
+    if not np.isclose(config.WEIGHTS.sum(), 1.0):
+        config.logger.error(f"...ERROR: Weights vector must sum to 1."
+              f"\nCurrent sum = {config.WEIGHTS.sum()}")
+        raise ValueError("Weights vector must sum to 1")
+    if config.WEIGHTS.shape[0] != len(config.ATTRIBUTES_LIST):
+
+        config.logger.error(f"...ERROR: Weights vector must be length {len(config.ATTRIBUTES_LIST)})"
+              f"but is ({config.WEIGHTS.shape[0]}).")
+        raise ValueError(f"Weights vector does not have expected length")
+
+    config.logger.debug(f"\nUsing weight vector (sum={config.WEIGHTS.sum()}):")
+    for attr, weight in zip(config.ATTRIBUTES_LIST, config.WEIGHTS):
+        config.logger.debug(f"...{attr}: {weight}")
+    return True
+
+def validate_attributes_matrix(A):
+    if A is None or len(A) == 0:
+        logger.error("...ERROR: Attributes matrix is empty")
+        raise ValueError("Attributes matrix is empty")
+    num_cols = A.shape[1]
+    num_attr = len(config.ATTRIBUTES_LIST)
+    if num_cols != num_attr:
+        logger.error("...ERROR: Attributes matrix has {num_cols} but expected {num_attr}")
+        raise ValueError("Attributes matrix does not have the expected dimensions.")
+        return False
+    return True
