@@ -21,76 +21,15 @@ def analyze_data(showradar):
         logger.error("❗Could not retrieve scenarios data from Config.")
         raise ValueError("Array of scenario names was empty.")
     attributes_norm = get_attributes_norm()
-    validate_attributes_matrix(attributes_norm)
+    weighted_attributes = get_weighted_attributes()
+    sorted_scenario_scores = get_sorted_scenario_scores()
 
-    # Validate weights vector
-    validate_weights();
-    logger.info(f"Using weights: {WEIGHTS}")
+    # Plot weights & scores
     plot_weights(config.ATTRIBUTES_LIST, config.WEIGHTS)
-
-    # Compute weighted attributes
-    weighted_attributes = attributes_norm * config.WEIGHTS
-    np.savetxt(f"{PROCESSED_DIR}/weighted_attributes.csv", weighted_attributes, delimiter=',', fmt='%10.5f')
-
-    # Compute scores
-    scores = compute_weighted_scores(attributes_norm, WEIGHTS)
-    np.savetxt(f"{config.PROCESSED_DIR}/scores.csv", scores, delimiter=',', fmt='%2.5f')
-    if scores is None:
-        logger.error("❗Failed to compute scores. Aborting score computation.\n")
-        return
-
-    # Sort results
-    sorted_scenario_scores = sort_scores(zip(scenarios, scores))
-    write_scores_to_csv(TOTALS_FILEPATH, sorted_scenario_scores)
-
-    # Plot scores
     plot_scores(sorted_scenario_scores)
-
-    # Print results
-    print_scenario_scores(sorted_scenario_scores)
 
     # Radar chart analysis
     plot_radar_charts(scenarios, weighted_attributes, config.ATTRIBUTES_LIST, showradar)
-
-
-
-"""-------------------------
-    Score Computation
--------------------------"""
-
-def compute_weighted_scores(A_norm, weights):
-    logger.debug("\n⏳Computing weighted scores")
-    try:
-        return A_norm @ weights
-    except Exception as e:
-        logger.error(f"....ERROR computing weighted scores: {e}")
-        return None
-
-
-def sort_scores(scenario_scores):
-    if SORT_TYPE == 0:
-        logger.debug(f"\t✔️  Sorted by Scenario name")
-        return sorted(scenario_scores, key=lambda x: x[0].lower())
-    elif SORT_TYPE == 1:
-        logger.debug(f"\t✔️  Sorted by Score (ascending)")
-        return sorted(scenario_scores, reverse=True, key=lambda x: x[1])
-    elif SORT_TYPE == 2:
-        logger.debug(f"\t✔️  Sorted by Score (descending)")
-        return sorted(scenario_scores, key=lambda x: x[1])
-    else:
-        logger.error(f"\tERROR: Invalid sort index {args.sortindex}."
-              f"See SORT_TYPE in config.py")
-        logger.error("! Returning unsorted scores.")
-        return scenario_scores
-
-
-def print_scenario_scores(scenario_scores):
-    logger.info("\n📊Weighted Scores:")
-    for scenario, score in scenario_scores:
-        logger.info(f"...{os.path.basename(scenario)}: {round(float(score), 6)}")
-    logger.info("\nWeighted scores are between -1 and 1. "
-          "A score of 0 means no change from current conditions.")
-
 
 
 """-------------------------

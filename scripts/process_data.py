@@ -32,11 +32,38 @@ def process_data():
     attributes_norm = l2_norm(attributes_matrix)
     if attributes_norm is None:
         raise RuntimeError("❗Failed to normalize attribute values. Aborting score computation.\n")
+    validate_attributes_matrix(attributes_norm)
+
+    # Validate weights vector
+    validate_weights();
+    logger.info(f"Using weights: {WEIGHTS}")
+
+    # Compute weighted attributes
+    weighted_attributes = attributes_norm * config.WEIGHTS
+    np.savetxt(f"{PROCESSED_DIR}/weighted_attributes.csv", weighted_attributes, delimiter=',', fmt='%10.5f')
+    set_weighted_attributes(weighted_attributes)
+
+    # Compute scores
+    scores = compute_weighted_scores(attributes_norm, WEIGHTS)
+    if scores is None:
+        logger.error("❗Failed to compute scores. Aborting score computation.\n")
+        return
+
+    # Sort results
+    sorted_scenario_scores = sort_scores(zip(scenarios, scores))
+    set_sorted_scenario_scores(sorted_scenario_scores)
+    print_scenario_scores(sorted_scenario_scores)
+    write_scores_to_csv(PROCESSED_DIR, sorted_scenario_scores)
 
     logger.debug("⏳Saving processed data for analysis")
     np.savetxt(f"{PROCESSED_DIR}/l2norm.csv", attributes_norm, delimiter=',', fmt='%10.5f')
     set_attributes_norm(attributes_norm)
 
+
+
+"""-------------------------
+    Score Computation
+-------------------------"""
 
 def invert_costs(matrix):
     construction_idx = ATTRIBUTES_LIST.index("ConstructionCost")
@@ -45,6 +72,38 @@ def invert_costs(matrix):
     A[:, construction_idx] = -A[:, construction_idx]
     A[:, maintenance_idx] = -A[:, maintenance_idx]
     return A
+
+def compute_weighted_scores(A_norm, weights):
+    logger.debug("\n⏳Computing weighted scores")
+    try:
+        return A_norm @ weights
+    except Exception as e:
+        logger.error(f"....ERROR computing weighted scores: {e}")
+        return None
+
+
+def sort_scores(scenario_scores):
+    if SORT_TYPE == 0:
+        logger.debug(f"\t✔️  Sorted by Scenario name")
+        return sorted(scenario_scores, key=lambda x: x[0].lower())
+    elif SORT_TYPE == 1:
+        logger.debug(f"\t✔️  Sorted by Score (ascending)")
+        return sorted(scenario_scores, reverse=True, key=lambda x: x[1])
+    elif SORT_TYPE == 2:
+        logger.debug(f"\t✔️  Sorted by Score (descending)")
+        return sorted(scenario_scores, key=lambda x: x[1])
+    else:
+        logger.error(f"\tERROR: Invalid sort index {args.sortindex}."
+              f"See SORT_TYPE in config.py")
+        logger.error("! Returning unsorted scores.")
+        return scenario_scores
+
+def print_scenario_scores(scenario_scores):
+    logger.info("\n📊Weighted Scores:")
+    for scenario, score in scenario_scores:
+        logger.info(f"...{os.path.basename(scenario)}: {round(float(score), 6)}")
+    logger.info("\nWeighted scores are between -1 and 1. "
+          "A score of 0 means no change from current conditions.")
 
 
 """

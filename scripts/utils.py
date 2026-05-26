@@ -138,10 +138,24 @@ def set_attributes_norm(new_attributes_norm):
     config.attributes_norm = new_attributes_norm
     config.logger.debug(f"\t✔️  Set attributes_norm: {config.attributes_norm}")
 
-
 def get_attributes_norm():
     return config.attributes_norm
 
+""" Sorted Scores """
+def set_sorted_scenario_scores(new_sorted_scores):
+    config.sorted_scenario_scores = new_sorted_scores
+    config.logger.debug(f"\t✔️  Set attributes_norm: {config.sorted_scenario_scores}")
+
+def get_sorted_scenario_scores():
+    return config.sorted_scenario_scores
+
+""" Weighted attributes """
+def set_weighted_attributes(new_weight_attr):
+    config.weighted_attributes = new_weight_attr
+    config.logger.debug(f"\t✔️  Set weight_attributes: {config.weighted_attributes}")
+
+def get_weighted_attributes():
+    return config.weighted_attributes
 
 """-------------------------
     Directory init
@@ -233,9 +247,8 @@ def sort_csv(filepath, sort_col, has_headers):
         writer.writerows(data)
 
 def write_scores_to_csv(filepath, scenario_scores):
-    directory = os.path.dirname(filepath)
     output_filename = f"weighted_scores.csv"
-    output_filepath = f"{directory}/{output_filename}"
+    output_filepath = f"{filepath}/{output_filename}"
     with open(output_filepath, "w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         writer.writerow(["Scenario", "WeightedScore"])

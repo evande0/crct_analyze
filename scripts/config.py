@@ -19,7 +19,7 @@ PARENT_DIR = Path(PROJ_DIR).parent # Folder for results will be created here
 # Directories for saved results
 '''
 TIMESTAMP = datetime.now().strftime('%Y-%m-%d_%H%M%S')
-SAVE_DIR = f"{PARENT_DIR}/pipeline_results/{TIMESTAMP}"
+SAVE_DIR = f"{PARENT_DIR}/analysis/{TIMESTAMP}"
 RAW_DIR = f"{SAVE_DIR}/raw"
 PROCESSED_DIR = f"{SAVE_DIR}/processed"
 PNG_DIR = f"{SAVE_DIR}/png_results"
