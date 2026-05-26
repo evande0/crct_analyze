@@ -1,6 +1,4 @@
 import config
-from datetime import datetime
-from pathlib import Path
 import csv
 import glob
 import json
@@ -9,6 +7,10 @@ import numpy as np
 import os
 import shutil
 import sys
+
+from datetime import datetime
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
 
 """-------------------------------
@@ -50,7 +52,11 @@ def init_logging(log_file, verbose=False, debug=False, quiet=False):
 
     # Set handlers
     console_handler = logging.StreamHandler(sys.stdout)
-    file_handler = logging.FileHandler(log_file)
+
+    # Rotate log files after 2MB, keep 200MB worth of logs
+    file_handler = RotatingFileHandler(
+        log_file, maxBytes=config.LOG_MAX_SIZE_BYTES, backupCount=config.LOG_MAX_BACKUPS, encoding="utf-8"
+    )
 
     console_handler.setLevel(console_level)
     console_handler.setFormatter(console_format)
@@ -61,34 +67,45 @@ def init_logging(log_file, verbose=False, debug=False, quiet=False):
     logger.addHandler(file_handler)
 
     logger.propagate = False
-    logger.debug("Successfully set up logger. ")
-    logger.debug("Console level: {logging.getLevelName(console_level)}")
-    logger.debug("File level: {logging.getLevelName(file_level)}")
+    logger.debug(f"\n\n==================== 🗃 {config.TIMESTAMP} 🗃 ====================\n")
+    logger.debug("\t✔️  Successfully set up logger. ")
+    logger.debug(f"\tConsole level: {logging.getLevelName(console_level)}")
+    logger.debug(f"\tFile level: {logging.getLevelName(file_level)}")
 
     return logger
 
-def consolidate_logs(verbose):
-    pattern = os.path.join(config.LOG_DIR, "DataPipeline_*.log")
-    output_filename = os.path.join(config.LOG_DIR, "DataPipeline.log")
-    log_files = sorted(glob.glob(pattern))
-    mode = "ab" if os.path.exists(output_filename) else "wb"
 
-    if not log_files:
-        if verbose:
-            print(f"No files matching 'pipeline_*.log' found in {config.LOG_DIR}.")
+def check_log_rotation_limits(log_file):
+    if config.LOG_MAX_WARN_THRESHOLD == -1:
+        config.logger.debug("Skipping check of max log backups. After LOG_MAX_BACKUPS, oldest logs will be overwritten without warning.")
+        return # Max log warning is suppressed
+
+    log_dir = os.path.dirname(log_file)
+    base_name = os.path.basename(log_file)
+
+    # Matches files like DataPipeline.log.1, DataPipeline.log.250, etc.
+    pattern = os.path.join(log_dir, f"{base_name}.*")
+    existing_backups = glob.glob(pattern)
+
+    # Filter to ensure we only count the extensions that are digits
+    rotation_count = sum(1 for f in existing_backups if f.split('.')[-1].isdigit())
+
+    remaining_slots = config.LOG_MAX_BACKUPS - rotation_count
+
+
+    if remaining_slots <= 0:
+        config.logger.warn(f"\nWARNING: Max log files reached. Oldest log files are being overwritten at:\n{log_dir}")
+    elif remaining_slots <= config.LOG_MAX_WARN_THRESHOLD:
+        config.logger.warn(f"\nWARNING: Current backup file count: {rotation_count} / {max_backups}")
+        config.logger.warn(f"After reaching {config.LOG_MAX_BACKUPS} the oldest logs will be permanently overwritten.")
+        config.logger.warn(f"If you wish to preserve your older log files, please back them up:\n{log_dir}")
+    else:
+        config.logger.debug(f"Current backup log file count: {rotation_count} / {config.LOG_MAX_BACKUPS}")
+        config.logger.debug(f"Backup log warning threshold: {config.LOG_MAX_WARN_THRESHOLD}")
         return
 
-    # Use 'wb' (write binary) for a direct byte-for-byte copy
-    with open(output_filename, mode) as outfile:
-        for fname in log_files:
-            header = f"\n===== {os.path.basename(fname)} =====\n\n"
-            outfile.write(header.encode('utf-8'))
-            with open(fname, 'rb') as infile:
-                outfile.write(b'{fname}')
-                shutil.copyfileobj(infile, outfile)
-                os.remove(fname)
-    if verbose:
-        print(f"Successfully consolidated {len(log_files)} files into {output_filename}")
+    config.logger.warn("To disable this warning, set LOG_MAX_WARN_THRESHOLD in config.py to -1\n")
+
 
 """-------------------------------
     Set/Get saved data from config
@@ -106,8 +123,9 @@ def set_raw_data(new_totals):
         all_totals.append(totals)
     config.scenarios = scenarios
     config.totals = all_totals
-    config.logger.debug(f"Set raw totals: {config.totals}")
-    config.logger.debug(f"Set scenario names: {config.scenarios}")
+    config.logger.debug(f"\t✔️  Set raw totals: {config.totals}")
+    config.logger.debug(f"\t✔️  Set scenario names: {config.scenarios}")
+
 
 def get_scenarios():
     return config.scenarios
@@ -118,7 +136,8 @@ def get_totals():
 """ Normalized data """
 def set_attributes_norm(new_attributes_norm):
     config.attributes_norm = new_attributes_norm
-    config.logger.debug(f"set attributes_norm: {config.attributes_norm}")
+    config.logger.debug(f"\t✔️  Set attributes_norm: {config.attributes_norm}")
+
 
 def get_attributes_norm():
     return config.attributes_norm
@@ -136,25 +155,27 @@ def create_dirs():
     os.makedirs(config.PNG_DIR, exist_ok=True)
 
     config.logger.debug("Created directories for pipeline artifacts")
-    config.logger.debug(f"Project directory: {config.PROJ_DIR}")
-    config.logger.debug(f"Save directory: {config.SAVE_DIR}")
-    config.logger.debug(f"Log files: {config.LOG_DIR}")
-    config.logger.debug(f"Raw data: {config.RAW_DIR}")
-    config.logger.debug(f"Processed data:{config.PROCESSED_DIR}")
-    config.logger.debug(f"PNG images: {config.PNG_DIR}")
+    config.logger.debug(f"\t✔️  Project directory: {config.PROJ_DIR}")
+    config.logger.debug(f"\t✔️  Save directory: {config.SAVE_DIR}")
+    config.logger.debug(f"\t✔️  Log files: {config.LOG_DIR}")
+    config.logger.debug(f"\t✔️  Raw data: {config.RAW_DIR}")
+    config.logger.debug(f"\t✔️  Processed data:{config.PROCESSED_DIR}")
+    config.logger.debug(f"\t✔️  PNG images: {config.PNG_DIR}")
+
 
 def setup_totals_file():
     with open(config.TOTALS_FILEPATH, "w", newline="", encoding="utf-8") as savetotals:
         writer = csv.DictWriter(savetotals, fieldnames=config.HEADERS)
         writer.writeheader()
-    config.logger.debug(f"Created CSV for totals: {config.TOTALS_FILEPATH}")
+    config.logger.debug(f"\t✔️  Created CSV for totals: {config.TOTALS_FILEPATH}")
 
 """-------------------------
     JSON & CSV utils
 -------------------------"""
 # Throws JSONDecodeError if unsuccessful
 def load_json(file_path):
-    config.logger.info(f"Reading data from {file_path}")
+    config.logger.info(f"\tReading data from {file_path}")
+
     if not os.path.exists(file_path):
         return
     with open(file_path, "r", encoding="utf-8") as file:
@@ -164,7 +185,8 @@ def load_json(file_path):
 def write_to_csv(filepath, data):
     base_name = os.path.basename(filepath)
     csv_filename = f"{config.RAW_DIR}/{base_name}_raw.csv"
-    config.logger.debug("Writing data to CSV {csv_filename}")
+    config.logger.debug(f"\tWriting data to CSV {csv_filename}")
+
 
     if not os.path.exists(config.RAW_DIR):
         logger.debug(f"WARN: Expected {config.RAW_DIR} to already exist. Did you run init_pipeline()?")
@@ -173,10 +195,10 @@ def write_to_csv(filepath, data):
         writer = csv.DictWriter(csvfile, fieldnames=config.HEADERS)
         writer.writeheader()
         writer.writerows(data)
-    config.logger.info(f"....Saved raw data to {os.path.basename(filepath)}")
+    config.logger.info(f"\t✔️  Saved raw data to {os.path.basename(filepath)}")
 
 def load_totals_csv(filepath):
-    config.logger.debug(f"...Loading totals CSV")
+    config.logger.debug(f"\tLoading totals CSV")
     scenarios = []
     matrix = []
 
@@ -190,11 +212,11 @@ def load_totals_csv(filepath):
                 values.append(value)
             matrix.append(values)
     A = np.array(matrix, dtype=float)
-    config.logger.debug(f"...Loaded attributes matrix with shape {A.shape}")
+    config.logger.debug(f"\t✔️  Loaded attributes matrix with shape {A.shape}")
     return scenarios, A
 
 def sort_csv(filepath, sort_col, has_headers):
-    config.logger.debug(f"...Sorting CSV file {filepath} by column {sort_col}")
+    config.logger.debug(f"Sorting CSV file {filepath} by column {sort_col}")
     with open(filepath, mode='r', newline='', encoding='utf-8') as f:
         reader = csv.reader(f)
         if has_headers:
@@ -219,7 +241,8 @@ def write_scores_to_csv(filepath, scenario_scores):
         writer.writerow(["Scenario", "WeightedScore"])
         for scenario, score in scenario_scores:
             writer.writerow([scenario, round(float(score), 4)])
-    config.logger.debug(f"Weighted scores written to:\n\t{output_filepath}")
+    config.logger.debug(f"\t✔️  Weighted scores written to:\n\t{output_filepath}")
+
 
 
 """-------------------------
@@ -238,8 +261,9 @@ def validate_filepath(filepath, expected_type):
 def validate_crct_json(json):
     if "areas" not in json or not isinstance(json["areas"], list):
         raise ValueError("Invalid CRCT JSON project file, missing 'area' name.")
-    config.logger.info("....Verified CRTC project JSON file")
+    config.logger.info("\t✔️  Verified CRTC project JSON file")
     return True
+
 
 def validate_weights():
     if not np.isclose(config.WEIGHTS.sum(), 1.0):
@@ -252,7 +276,7 @@ def validate_weights():
               f"but is ({config.WEIGHTS.shape[0]}).")
         raise ValueError(f"Weights vector does not have expected length")
 
-    config.logger.debug(f"\nUsing weight vector (sum={config.WEIGHTS.sum()}):")
+    config.logger.debug(f"\n⚖️  Using weight vector (sum={config.WEIGHTS.sum()}):")
     for attr, weight in zip(config.ATTRIBUTES_LIST, config.WEIGHTS):
         config.logger.debug(f"...{attr}: {weight}")
     return True

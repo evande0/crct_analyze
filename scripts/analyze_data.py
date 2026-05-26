@@ -6,7 +6,6 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 from config import *
 from utils import *
-from pipeline_logger import *
 
 logger = None
 
@@ -60,7 +59,7 @@ def analyze_data(showradar):
 -------------------------"""
 
 def compute_weighted_scores(A_norm, weights):
-    logger.debug("\nComputing weighted scores")
+    logger.debug("\n⏳Computing weighted scores")
     try:
         return A_norm @ weights
     except Exception as e:
@@ -70,23 +69,23 @@ def compute_weighted_scores(A_norm, weights):
 
 def sort_scores(scenario_scores):
     if SORT_TYPE == 0:
-        logger.debug(f"...Sorted by Scenario name")
+        logger.debug(f"\t✔️  Sorted by Scenario name")
         return sorted(scenario_scores, key=lambda x: x[0].lower())
     elif SORT_TYPE == 1:
-        logger.debug(f"...Sorted by Score (ascending)")
+        logger.debug(f"\t✔️  Sorted by Score (ascending)")
         return sorted(scenario_scores, reverse=True, key=lambda x: x[1])
     elif SORT_TYPE == 2:
-        logger.debug(f"...Sorted by Score (descending)")
+        logger.debug(f"\t✔️  Sorted by Score (descending)")
         return sorted(scenario_scores, key=lambda x: x[1])
     else:
-        logger.error(f"...ERROR: Invalid sort index {args.sortindex}."
-              f"Expected 0 (for Scenario) or 1 (for Score descending).")
-        logger.error("Returning unsorted scores.")
+        logger.error(f"\tERROR: Invalid sort index {args.sortindex}."
+              f"See SORT_TYPE in config.py")
+        logger.error("! Returning unsorted scores.")
         return scenario_scores
 
 
 def print_scenario_scores(scenario_scores):
-    logger.info("\nWeighted Scores:")
+    logger.info("\n📊Weighted Scores:")
     for scenario, score in scenario_scores:
         logger.info(f"...{os.path.basename(scenario)}: {round(float(score), 6)}")
     logger.info("\nWeighted scores are between -1 and 1. "
@@ -99,7 +98,7 @@ def print_scenario_scores(scenario_scores):
 -------------------------"""
 
 def plot_scores(scenario_scores):
-    logger.debug("Generating scenario score bar chart...")
+    logger.debug("\n⏳Generating scenario score bar chart...")
 
     try:
         scenarios, scores = zip(*scenario_scores)
@@ -123,16 +122,17 @@ def plot_scores(scenario_scores):
         plt.tight_layout() # Prevents label cutoff
         png_file = "weighted_scores.png"
         plt.savefig(f"{PNG_DIR}/{png_file}", bbox_inches='tight')
-        logging.debug(f"....Saved {png_file}")
+        logging.debug(f"\tSaved {png_file}")
         plt.close()
 
-        logger.info(f"Chart successfully saved to {png_file}")
+        logger.info(f"\t✔️  Chart successfully saved to {png_file}")
+
 
     except Exception as e:
         logger.error(f"Failed to generate plot: {e}", exc_info=True)
 
 def plot_weights(attributes, weights):
-    logger.debug("Plotting weights  vector...")
+    logger.debug("\n⏳Plotting weights  vector...")
     ylim = min(1, np.max(weights)*2)
 
     try:
@@ -159,7 +159,8 @@ def plot_weights(attributes, weights):
         logging.debug(f"....Saved {png_file}")
         plt.close()
 
-        logger.info(f"Chart successfully saved to {png_file}")
+        logger.info(f"\t✔️  Chart successfully saved to {png_file}")
+
 
     except Exception as e:
         logger.error(f"Failed to generate plot: {e}", exc_info=True)
@@ -168,7 +169,7 @@ def plot_weights(attributes, weights):
 
 def plot_radar_charts(scenarios, A, attributes, showradar):
     validate_attributes_matrix(A)
-    logger.debug("\nGenerating radar charts")
+    logger.debug("\n⏳Generating radar charts")
 
     m, n = A.shape
     angles = np.linspace(0, 2 * np.pi, n, endpoint=False).tolist()
@@ -190,7 +191,8 @@ def plot_radar_charts(scenarios, A, attributes, showradar):
         plot_values(ax, scenarios[i], A[i].tolist(), angles)
         plot_radar(ax, attributes, fig_title, angles, showradar)
 
-    logger.debug("...Finished generating radar charts")
+    logger.debug("\t✔️  Finished generating radar charts")
+
 
 
 def plot_values(ax, label, values, angles):
@@ -225,5 +227,5 @@ def init_save_png():
 def init_save_dir():
     PNG_DIR = SAVE_DIR + "/png"
     if not os.path.exists(PNG_DIR):
-        logger.debug(f"Creating PNG folder for radar charts")
+        logger.debug(f"\nCreating PNG folder for radar charts")
         os.mkdir(PNG_DIR)

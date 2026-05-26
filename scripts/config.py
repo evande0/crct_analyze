@@ -31,9 +31,19 @@ TOTALS_FILEPATH = f"{RAW_DIR}/{TOTALS_FILENAME}"
 '''
 LOGGER_NAME = "DataPipeline"
 LOG_DIR = f"{PARENT_DIR}/logs"
-LOG_FILE = f"{LOG_DIR}/DataPipeline_{TIMESTAMP}.log"
+LOG_FILE = f"{LOG_DIR}/DataPipeline.log"
 LOG_FILE_FORMAT = "%(asctime)s [%(levelname)s] %(filename)s:%(lineno)d (%(funcName)s): %(message)s"
 LOG_CONSOLE_FORMAT = "%(message)s"
+
+# Logs will rotate after 2MB. Set to 0 to disable log rotation.
+LOG_MAX_SIZE_BYTES = 2 * 1024 * 1024
+
+# After reaching max backup log files, the oldest logs will be overwritten
+LOG_MAX_BACKUPS = 100
+
+# Remaining log backup files before user is warned. Set to -1 to disable checking.
+LOG_MAX_WARN_THRESHOLD = 3
+
 
 """
 Score sorting

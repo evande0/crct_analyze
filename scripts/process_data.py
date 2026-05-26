@@ -17,8 +17,8 @@ def process_data():
     scenarios = get_scenarios()
     totals = get_totals()
     if scenarios is None or totals is None:
-        logger.warn("No totals saved. Extracting totals from CSV instead...")
-        logger.debug(f"\nProcessing totals file:\n\t{TOTALS_FILEPATH}")
+        logger.warn("❓No totals saved. Extracting totals from CSV instead...")
+        logger.debug(f"\n⏳Processing totals file:\n\t{TOTALS_FILEPATH}")
         scenarios, matrix = load_totals_csv(TOTALS_FILEPATH)
     else:
         matrix = np.array(get_totals(), dtype=float)
@@ -33,7 +33,7 @@ def process_data():
     if attributes_norm is None:
         raise RuntimeError("❗Failed to normalize attribute values. Aborting score computation.\n")
 
-    logger.debug("...Saving processed data for analysis")
+    logger.debug("⏳Saving processed data for analysis")
     np.savetxt(f"{PROCESSED_DIR}/l2norm.csv", attributes_norm, delimiter=',', fmt='%10.5f')
     set_attributes_norm(attributes_norm)
 
@@ -51,7 +51,7 @@ def invert_costs(matrix):
 Returns matrix after applying L2 normalization to columns.
 """
 def l2_norm(A):
-    logger.debug("...Performing L2 column normalization")
+    logger.debug("⏳Performing L2 column normalization")
     # Calc L2 norm for each column
     norms = np.linalg.norm(A, axis=0)
 

@@ -2,7 +2,6 @@ import argparse
 from datetime import datetime
 
 from config import *
-from pipeline_logger import *
 from utils import *
 from extract_data import *
 from process_data import *
@@ -19,21 +18,25 @@ TODO
     Run the pipeline by calling 'python3 run_pipeline.py'
 '''
 def run_full_pipeline(args, logger):
-    logger.warning("\n⏳ Begin running data pipeline\n")
+    logger.warning("\n⏳ Begin running data pipeline")
     try:
         extract_all_data(args.folder)
-        logger.warning("✅ Data extraction complete.")
+        logger.warning(f"✅ Data extraction complete.")
 
         process_data()
-        logger.warning("✅ Processing complete.")
+        logger.warning(f"✅ Processing complete.")
 
         analyze_data(args.showradar)
-        logger.warning("✅ Analysis complete.")
+        logger.warning(f"✅ Analysis complete.")
 
-        logger.warning("\n🎉 Data pipeline completed successfully.")
-        logger.warning(f"\nSee pipeline artifacts in {SAVE_DIR}\n")
+        logger.warning("🎉 Data pipeline completed successfully.")
+        logger.warning(f"📁 See data and analysis in {SAVE_DIR}\n")
     except Exception as e:
         log_failure(e, logger)
+    finally:
+        # Warn user if running out of log file space
+        check_log_rotation_limits(LOG_FILE)
+
 
 
 def log_failure(e, logger):
@@ -62,15 +65,10 @@ if __name__ == "__main__":
     parser.add_argument("-q", "--quiet", action="store_true", help=HELP_QUIET)
     args = parser.parse_args()
 
-    consolidate_logs(args.verbose)
     logger = init_logging(LOG_FILE, args.verbose, args.debug, args.quiet)
     logger.propagate = False
     set_logger(logger)
-    if get_logger() is None:
-        print("config.LOGGER is still None??")
-    else:
-        print("Logger set successfully")
-    logger.debug(f"\n{args}")
+    logger.debug(f"\nArgs: {args}\n")
 
     init_pipeline(logger)
     run_full_pipeline(args, logger)
