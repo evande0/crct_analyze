@@ -6,6 +6,7 @@ from utils import *
 from extract_data import *
 from process_data import *
 from analyze_data import *
+from sensitivity import run_sensitivity_analysis
 
 '''
 TODO
@@ -31,6 +32,8 @@ def run_full_pipeline(args, logger):
 
         logger.warning("🎉 Data pipeline completed successfully.")
         logger.warning(f"📁 See data and analysis in {SAVE_DIR}\n")
+
+        run_sensitivity_analysis()
     except Exception as e:
         log_failure(e, logger)
     finally:

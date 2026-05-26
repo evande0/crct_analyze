@@ -20,9 +20,18 @@ def analyze_data(showradar):
     if not scenarios:
         logger.error("❗Could not retrieve scenarios data from Config.")
         raise ValueError("Array of scenario names was empty.")
-    attributes_norm = get_attributes_norm()
     weighted_attributes = get_weighted_attributes()
     sorted_scenario_scores = get_sorted_scenario_scores()
+
+    # Sort by scenario name
+    sorted_pairs = sorted(
+        zip(scenarios, weighted_attributes),
+        key=lambda x: x[0]
+    )
+    scenarios, weighted_attributes = zip(*sorted_pairs)
+
+    scenarios = list(scenarios)
+    weighted_attributes = np.array(weighted_attributes)
 
     # Plot weights & scores
     plot_weights(config.ATTRIBUTES_LIST, config.WEIGHTS)
@@ -133,7 +142,6 @@ def plot_radar_charts(scenarios, A, attributes, showradar):
     logger.debug("\t✔️  Finished generating radar charts")
 
 
-
 def plot_values(ax, label, values, angles):
     values += values[:1]
     ax.plot(angles, values, linewidth=2, label=label)
@@ -141,7 +149,7 @@ def plot_values(ax, label, values, angles):
 
 
 def plot_radar(ax, labels, fig_title, angles, showradar):
-    ylim = max(WEIGHTS)
+    ylim = np.round(max(WEIGHTS),3)
     ax.set_xticks(angles[:-1])
     ax.set_xticklabels(labels, fontsize=9)
     ax.set_yticks([-ylim, -ylim/2.0, 0.0, ylim/2.0, ylim])

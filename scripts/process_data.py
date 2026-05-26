@@ -15,6 +15,7 @@ Loads extracted data, inverts cost criteria, and applies L2 normalization
 """
 def process_data():
     scenarios = get_scenarios()
+    print(f"scenarios: \n\n{scenarios}\n\n")
     totals = get_totals()
     if scenarios is None or totals is None:
         logger.warn("❓No totals saved. Extracting totals from CSV instead...")
