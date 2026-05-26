@@ -56,34 +56,48 @@ SORT_TYPE = 0
 '''
 Weights - Edit me to reflect criteria priorities
 '''
-# WEIGHTS = np.array([
-#     .2,     # ConstructionCost
-#     .2,     # MaintenanceCost
-#     .05,     # TempReduction
-#     .05,     # NutrientReduction
-#     .05,     # PathogenReduction
-#     .05,     # AdsorbingPollutants
-#     .1,      # GroundwaterRecharge
-#     .1,      # Evapotranspiration
-#     .2       # StorageCapacity
-#     ])
+WEIGHTS = np.array([
+    .2,     # ConstructionCost
+    .2,     # MaintenanceCost
+    .05,     # TempReduction
+    .05,     # NutrientReduction
+    .05,     # PathogenReduction
+    .05,     # AdsorbingPollutants
+    .1,      # GroundwaterRecharge
+    .1,      # Evapotranspiration
+    .2       # StorageCapacity
+    ])
 
 
 '''
 Flat weights (.111111)
 '''
-WEIGHTS = np.array([
-    .111111,     # ConstructionCost
-    .111111,     # MaintenanceCost
-    .111111,     # TempReduction
-    .111111,     # NutrientReduction
-    .111111,     # PathogenReduction
-    .111111,     # AdsorbingPollutants
-    .111111,      # GroundwaterRecharge
-    .111111,      # Evapotranspiration
-    .111111       # StorageCapacity
-    ])
+# WEIGHTS = np.array([
+#     .111111,     # ConstructionCost
+#     .111111,     # MaintenanceCost
+#     .111111,     # TempReduction
+#     .111111,     # NutrientReduction
+#     .111111,     # PathogenReduction
+#     .111111,     # AdsorbingPollutants
+#     .111111,      # GroundwaterRecharge
+#     .111111,      # Evapotranspiration
+#     .111111       # StorageCapacity
+#     ])
 
+'''
+Sensitivity
+'''
+# WEIGHTS = np.array([
+#     0.0,     # ConstructionCost
+#     0.125,     # MaintenanceCost
+#     0.125,     # TempReduction
+#     0.125,     # NutrientReduction
+#     0.125,     # PathogenReduction
+#     0.125,     # AdsorbingPollutants
+#     0.125,      # GroundwaterRecharge
+#     0.125,      # Evapotranspiration
+#     0.125       # StorageCapacity
+#     ])
 
 '''
 ------------------------------------------

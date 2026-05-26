@@ -9,8 +9,8 @@ from analyze_data import *
 from sensitivity import run_sensitivity_analysis
 
 '''
-TODO
-- Rotating console log
+Assumptions
+- No more than 9 scenarios total (sorting is alpha, not based on the number suffix)
 -
 '''
 

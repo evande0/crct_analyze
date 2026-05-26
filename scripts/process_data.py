@@ -24,6 +24,15 @@ def process_data():
     else:
         matrix = np.array(get_totals(), dtype=float)
 
+    # Sort by scenario name
+    sorted_pairs = sorted(
+        zip(scenarios, matrix),
+        key=lambda x: x[0]
+    )
+    scenarios, matrix = zip(*sorted_pairs)
+    scenarios = list(scenarios)
+    matrix = np.array(matrix)
+
     validate_attributes_matrix(matrix)
 
     # Costs are a negative criteria

@@ -28,8 +28,22 @@ def run_sensitivity_analysis(step_size=0.05):
     num_scenarios = len(scenarios)
     num_attributes = len(ATTRIBUTES_LIST)
 
+    sensitivity_weights = np.array([
+    0.0,     # ConstructionCost
+    0.125,     # MaintenanceCost
+    0.125,     # TempReduction
+    0.125,     # NutrientReduction
+    0.125,     # PathogenReduction
+    0.125,     # AdsorbingPollutants
+    0.125,      # GroundwaterRecharge
+    0.125,      # Evapotranspiration
+    0.125       # StorageCapacity
+    ])
+
+    last_weights = sensitivity_weights
+
     # Establish baseline rankings
-    baseline_scores = compute_weighted_scores(attributes_norm, WEIGHTS)
+    baseline_scores = compute_weighted_scores(attributes_norm, sensitivity_weights)
     baseline_ranking = [scenarios[idx] for idx in np.argsort(baseline_scores)[::-1]]
     baseline_winner = baseline_ranking[0]
 
@@ -53,25 +67,28 @@ def run_sensitivity_analysis(step_size=0.05):
             # Generate the test interval from 0.0 to 1.0 using the designated step size
             test_weights = np.arange(0.0, 1.0 + step_size, step_size)
             test_weights = np.clip(test_weights, 0.0, 1.0) # Guard against floating point creep
+            logger.warn(f"Test weights: {test_weights}"})
 
             attr_winners = []
             attr_weight_profiles = []
 
             for tw in test_weights:
                 # Copy original weight array
-                w_new = WEIGHTS.copy()
+                w_new = last_weights.copy()
                 orig_w = w_new[target_idx]
+                non_target_count = num_attributes - 1
+                distributed_step = step_size / non_target_count
 
                 # Assign the adjusted target weight
                 w_new[target_idx] = tw
 
-                # Proportional redistribution to preserve the 1.0 sum boundary
-                remaining_mass = 1.0 - tw
-                orig_remaining_mass = 1.0 - orig_w
+#                 # Proportional redistribution to preserve the 1.0 sum boundary
+#                 remaining_mass = 1.0 - tw
+#                 orig_remaining_mass = 1.0 - orig_w
 
                 if np.isclose(orig_remaining_mass, 0.0):
                     # Edge case: If the original weight was 1, distribute remainder equally
-                    non_target_count = num_attributes - 1
+
                     for i in range(num_attributes):
                         if i != target_idx:
                             w_new[i] = remaining_mass / non_target_count
@@ -79,7 +96,7 @@ def run_sensitivity_analysis(step_size=0.05):
                     # Scale remaining elements proportionally
                     for i in range(num_attributes):
                         if i != target_idx:
-                            w_new[i] = w_new[i] * (remaining_mass / orig_remaining_mass)
+                            w_new[i] = w_new[i]
 
                 # Force precise mathematical closing sum to clear validate_weights conditions
                 if not np.isclose(w_new.sum(), 1.0):

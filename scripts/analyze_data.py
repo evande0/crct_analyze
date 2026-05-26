@@ -29,7 +29,6 @@ def analyze_data(showradar):
         key=lambda x: x[0]
     )
     scenarios, weighted_attributes = zip(*sorted_pairs)
-
     scenarios = list(scenarios)
     weighted_attributes = np.array(weighted_attributes)
 
