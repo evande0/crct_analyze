@@ -67,7 +67,7 @@ def init_logging(log_file, verbose=False, debug=False, quiet=False):
     logger.addHandler(file_handler)
 
     logger.propagate = False
-
+    logger.debug(f"\n\n==================== 🗃 {config.TIMESTAMP} 🗃 ====================\n")
     logger.debug("\t✔️  Successfully set up logger. ")
     logger.debug(f"\tConsole level: {logging.getLevelName(console_level)}")
     logger.debug(f"\tFile level: {logging.getLevelName(file_level)}")
