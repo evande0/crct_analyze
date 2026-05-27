@@ -14,24 +14,17 @@ logger = None
 Loads extracted data, inverts cost criteria, and applies L2 normalization
 """
 def process_data():
-    scenarios = get_scenarios()
-    print(f"scenarios: \n\n{scenarios}\n\n")
-    totals = get_totals()
-    if scenarios is None or totals is None:
-        logger.warn("❓No totals saved. Extracting totals from CSV instead...")
-        logger.debug(f"\n⏳Processing totals file:\n\t{TOTALS_FILEPATH}")
-        scenarios, matrix = load_totals_csv(TOTALS_FILEPATH)
-    else:
-        matrix = np.array(get_totals(), dtype=float)
+    scenarios, raw_values = load_raw_values()
+
 
     # Sort by scenario name
     sorted_pairs = sorted(
-        zip(scenarios, matrix),
+        zip(scenarios, raw_values),
         key=lambda x: x[0]
     )
-    scenarios, matrix = zip(*sorted_pairs)
+    scenarios, raw_values = zip(*sorted_pairs)
     scenarios = list(scenarios)
-    matrix = np.array(matrix)
+    matrix = np.array(raw_values)
 
     validate_attributes_matrix(matrix)
 

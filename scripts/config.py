@@ -23,14 +23,14 @@ SAVE_DIR = f"{PARENT_DIR}/analysis/{TIMESTAMP}"
 RAW_DIR = f"{SAVE_DIR}/raw"
 PROCESSED_DIR = f"{SAVE_DIR}/processed"
 PNG_DIR = f"{SAVE_DIR}/png_results"
-TOTALS_FILENAME = f"scenario_totals_{TIMESTAMP}.csv"
-TOTALS_FILEPATH = f"{RAW_DIR}/{TOTALS_FILENAME}"
+TOTALS_FILENAME = f"scenario_totals.csv"
+TOTALS_FILEPATH = f"{PARENT_DIR}/data/{TOTALS_FILENAME}"
 
 '''
 # Logger
 '''
-LOGGER_NAME = "DataPipeline"
 LOG_DIR = f"{PARENT_DIR}/logs"
+LOGGER_NAME = "DataPipeline"
 LOG_FILE = f"{LOG_DIR}/DataPipeline.log"
 LOG_FILE_FORMAT = "%(asctime)s [%(levelname)s] %(filename)s:%(lineno)d (%(funcName)s): %(message)s"
 LOG_CONSOLE_FORMAT = "%(message)s"
@@ -72,32 +72,32 @@ WEIGHTS = np.array([
 '''
 Flat weights (.111111)
 '''
-# WEIGHTS = np.array([
-#     .111111,     # ConstructionCost
-#     .111111,     # MaintenanceCost
-#     .111111,     # TempReduction
-#     .111111,     # NutrientReduction
-#     .111111,     # PathogenReduction
-#     .111111,     # AdsorbingPollutants
-#     .111111,      # GroundwaterRecharge
-#     .111111,      # Evapotranspiration
-#     .111111       # StorageCapacity
-#     ])
+FLAT_WEIGHTS = np.array([
+    .111111,     # ConstructionCost
+    .111111,     # MaintenanceCost
+    .111111,     # TempReduction
+    .111111,     # NutrientReduction
+    .111111,     # PathogenReduction
+    .111111,     # AdsorbingPollutants
+    .111111,      # GroundwaterRecharge
+    .111111,      # Evapotranspiration
+    .111111       # StorageCapacity
+    ])
 
 '''
 Sensitivity
 '''
-# WEIGHTS = np.array([
-#     0.0,     # ConstructionCost
-#     0.125,     # MaintenanceCost
-#     0.125,     # TempReduction
-#     0.125,     # NutrientReduction
-#     0.125,     # PathogenReduction
-#     0.125,     # AdsorbingPollutants
-#     0.125,      # GroundwaterRecharge
-#     0.125,      # Evapotranspiration
-#     0.125       # StorageCapacity
-#     ])
+SENSITIVITY_START_WEIGHTS = np.array([
+    0.0,     # ConstructionCost
+    0.125,     # MaintenanceCost
+    0.125,     # TempReduction
+    0.125,     # NutrientReduction
+    0.125,     # PathogenReduction
+    0.125,     # AdsorbingPollutants
+    0.125,      # GroundwaterRecharge
+    0.125,      # Evapotranspiration
+    0.125       # StorageCapacity
+    ])
 
 '''
 ------------------------------------------
@@ -152,11 +152,13 @@ ATTRIBUTES_LIST = [
 
 # Help Strings
 PROG_NAME = "crct_data_pipeline"
-PROG_DESCR = "Extracts, processes, and analyzes data from the CRCT project JSON files saved in the specified folder."
+PROG_DESCR = "Extracts, processes & analyzes data from the CRCT project JSON files."
+HELP_EXTRACT = "Force extract of data from project JSON files, overwriting any saved data"
 HELP_FOLDER = "Folder containing project JSON files. Defaults to PROJ_DIR set in config.py "
 HELP_SORTTYPE = "0: Sort by scenario name. 1: Sort by score ascending. 2: Sort by score descending"
 HELP_VERBOSE = "Print INFO logs to console"
 HELP_DEBUG = "Print DEBUG logs to console"
 HELP_QUIET = "Suppress all but CRITICAL logs from printing to console"
 HELP_SHOWRADAR = "Display radar charts in addition to saving them as PNGs"
+
 

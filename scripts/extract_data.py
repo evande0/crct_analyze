@@ -23,41 +23,89 @@ def extract_all_data(folder):
     path = Path(folder)
     project_files = path.glob("*.json")
     file = get_next(project_files)
-    all_totals = []
+
+    # Includes scenario names and attribute totals for each scenario
+    files_data = []
     while file is not None:
-        all_totals.append(extract_data(file))
+        file_data, file_totals = extract_project_data(file)
+        files_data.append(file_data)
         count += 1
         file = get_next(project_files)
     if count == 0:
         raise FileNotFoundError(f"No JSON files found at '{folder}'")
-    utils.sort_csv(TOTALS_FILEPATH, 0, True) # Sort by scenario name
-    utils.set_raw_data(all_totals)
+
+    # Sort totals CSV by scenario name
+    utils.sort_csv(TOTALS_FILEPATH, 0, True)
+    save_extracted_to_config(files_data)
     logger.info(f"\t✔️  Extracted data from {count} JSON files in '{folder}'")
 
-def extract_data(filepath):
+def save_extracted_to_config(files_data):
+    set_raw_files_data(files_data)
+    config.logger.debug(f"\t✔️  Set raw files data: {config.raw_files_data}")
+
+    names, raw_attr_values = split_names_values_lists(files_data)
+    set_scenario_names(names)
+    config.logger.debug(f"\t✔️  Set scenario names: {config.scenario_names}")
+    set_raw_attr_values(raw_attr_values)
+    config.logger.debug(f"\t✔️  Set raw attributes data by scenario: {config.raw_attr_values}")
+
+def extract_project_data(filepath):
     logger.info(f"⏳Extracting data from {filepath}")
 
-    # Open the JSON
+    # Open the project JSON
     json = utils.load_json(filepath)
     utils.validate_crct_json(json)
 
-    # Extract attribute data from the scenarios
+    # Extract data from project JSON
     project_data = get_rows(json)
 
-    # Calculate scenario totals
-    totals = calc_totals(project_data, filepath)
-    project_data.append(totals)
+    # Calculate attribute totals for this scenario
+    scenario_totals = calc_file_totals(project_data, filepath)
+    project_data.append(scenario_totals)
 
-    # Append scenario totals to the totals file
-    append_to_totals_csv(totals)
-
-    # Write data to CSV
+    # Save extracted data to CSV
+    append_to_totals_csv(scenario_totals)
     utils.write_to_csv(filepath, project_data)
-
     logger.info(f"\t✔️  Finished extracting data from {os.path.basename(filepath)}.")
 
-    return totals
+    return file_data, scenario_totals
 
+
+
+"""
+Strips files_data down to a list of scenario names and list of scenario attributes values
+"""
+def split_names_values_lists(files_data):
+    scenario_names = []
+    scenarios_attributes = []
+    for scenario in files_data:
+        scenario_names.append(scenario["Name"])
+        scenarios_attributes.append(extract_attributes(scenario))
+    return scenario_names, scenarios_attributes
+
+def extract_attributes(scenario):
+    attributes = []
+    for attr in config.ATTRIBUTES_LIST:
+        attributes.append(scenario[attr])
+    scenario_names.append(scenario["Name"])
+    return attributes
+
+
+"""
+def set_raw_data(new_totals):
+    all_totals = []
+    scenarios = []
+    for scenario in new_totals:
+        scenarios.append(scenario["Name"])
+        totals = []
+        for attr in config.ATTRIBUTES_LIST:
+            totals.append(scenario[attr])
+        all_totals.append(totals)
+    config.scenarios = scenarios
+    config.totals = all_totals
+    config.logger.debug(f"\t✔️  Set raw totals: {config.totals}")
+    config.logger.debug(f"\t✔️  Set scenario names: {config.scenarios}")
+"""
 
 def get_rows(data):
     logger.debug("⏳Getting rows from data...")
@@ -77,9 +125,10 @@ def get_rows(data):
     logger.info("\t✔️  Extracted rows from data")
     return rows
 
-def calc_totals(rows, filepath):
+def calc_file_totals(rows, filepath):
     logger.debug(f"⏳Calculating totals for {os.path.basename(filepath)}...")
-    totals = {"Name" : f"{os.path.basename(filepath)}", "MeasureCode": "-"}
+    scenario_name = os.path.basename(filepath);
+    scenario_totals = {"Name" : f"{scenario_name}", "MeasureCode": "-"}
     for key in HEADERS[2:]:
         total = 0.0
         for row in rows:
@@ -89,11 +138,10 @@ def calc_totals(rows, filepath):
                 except (ValueError, TypeError):
                     pass
             else:
-                totals[key] = row[key]
-        totals[key] = round(total, 5)
-#         logger.debug(f"....Set totals value for key {key} to {totals[key]}")
-    logger.info(f"\t✔️  Calculated totals for {os.path.basename(filepath)}")
-    return totals
+                scenario_totals[key] = row[key]
+        scenario_totals[key] = round(total, 5)
+    logger.info(f"\t✔️  Calculated totals for {scenario_name}")
+    return scenario_totals
 
 def append_to_totals_csv(totals):
     logger.debug(f"⏳Appending totals to {TOTALS_FILENAME}...")
@@ -101,8 +149,6 @@ def append_to_totals_csv(totals):
         writer = csv.DictWriter(savetotals, fieldnames=HEADERS)
         writer.writerow(totals)
     logger.info(f"\t✔️  Appended scenario totals to {TOTALS_FILENAME}")
-
-
 
 def get_next(iterable):
     try:

@@ -9,52 +9,37 @@ from process_data import invert_costs, l2_norm, compute_weighted_scores
 
 logger = None
 
-def run_sensitivity_analysis(step_size=0.05):
+def run_sensitivity_analysis(step_size=0.05, extract=False):
     global logger
     logger = utils.get_logger()
     if logger is None:
         logger = utils.init_logging(LOG_FILE, verbose=True)
         utils.set_logger(logger)
-
     logger.warning(f"\n⏳ Starting Criteria Sensitivity Analysis (Step Size: {step_size})")
 
-    # 1. Load the raw totals data via utils
-    scenarios, matrix = utils.load_totals_csv(TOTALS_FILEPATH)
+    # Load data
+    scenarios, matrix = utils.load_totals(TOTALS_FILEPATH, extract)
 
-    # 2. Replicate core preprocessing pipeline steps
+    # Process data
+    logger.info("...Processing data")
     attributes_matrix = invert_costs(matrix)
     attributes_norm = l2_norm(attributes_matrix)
-
     num_scenarios = len(scenarios)
     num_attributes = len(ATTRIBUTES_LIST)
 
-    sensitivity_weights = np.array([
-    0.0,     # ConstructionCost
-    0.125,     # MaintenanceCost
-    0.125,     # TempReduction
-    0.125,     # NutrientReduction
-    0.125,     # PathogenReduction
-    0.125,     # AdsorbingPollutants
-    0.125,      # GroundwaterRecharge
-    0.125,      # Evapotranspiration
-    0.125       # StorageCapacity
-    ])
-
-    last_weights = sensitivity_weights
-
-    # Establish baseline rankings
-    baseline_scores = compute_weighted_scores(attributes_norm, sensitivity_weights)
+    # Establish baseline rankings using even weights
+    logger.info("...Computing baseline scores using even weights")
+    baseline_scores = compute_weighted_scores(attributes_norm, FLAT_WEIGHTS)
     baseline_ranking = [scenarios[idx] for idx in np.argsort(baseline_scores)[::-1]]
+    logger.debug(f"\t✔️  Computed baseline ranking: {baseline_ranking}")
     baseline_winner = baseline_ranking[0]
-
     logger.info(f"Baseline Winner: {baseline_winner}")
 
-    # Create directory for sensitivity output artifacts
+    # Init sensitivity analysis
     sensitivity_dir = f"{SAVE_DIR}/sensitivity"
     os.makedirs(sensitivity_dir, exist_ok=True)
-
-    # Open a CSV summary log file
     summary_filepath = f"{sensitivity_dir}/sensitivity_summary.csv"
+    last_weights = SENSITIVITY_START_WEIGHTS
 
     with open(summary_filepath, "w", newline="", encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile)
@@ -67,7 +52,7 @@ def run_sensitivity_analysis(step_size=0.05):
             # Generate the test interval from 0.0 to 1.0 using the designated step size
             test_weights = np.arange(0.0, 1.0 + step_size, step_size)
             test_weights = np.clip(test_weights, 0.0, 1.0) # Guard against floating point creep
-            logger.warn(f"Test weights: {test_weights}"})
+            logger.warn(f"Test weights: {test_weights}")
 
             attr_winners = []
             attr_weight_profiles = []
@@ -150,6 +135,7 @@ def plot_attribute_stability(attr_name, weights, winners, baseline_winner, save_
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run independent criteria sensitivity analysis sweeps.")
     parser.add_argument("-s", "--step", type=float, default=0.05, help="Weight perturbation increment value (default: 0.05)")
+    parser.add_argument("-x","--extract", action="store_true", help=HELP_EXTRACT)
     args = parser.parse_args()
 
     # Use fallback configuration directories if running completely isolated
@@ -157,4 +143,4 @@ if __name__ == "__main__":
         print(f"❗ Error: Extracted pipeline metrics not found at target location: {TOTALS_FILEPATH}")
         print("Please run 'python3 run_pipeline.py' at least once to generate initial data matrices.")
     else:
-        run_sensitivity_analysis(step_size=args.step)
+        run_sensitivity_analysis(step_size=args.step, extract=args.extract)

@@ -112,26 +112,23 @@ def check_log_rotation_limits(log_file):
 ----------------------------------"""
 
 """ Raw data from project files """
-def set_raw_data(new_totals):
-    all_totals = []
-    scenarios = []
-    for scenario in new_totals:
-        scenarios.append(scenario["Name"])
-        totals = []
-        for attr in config.ATTRIBUTES_LIST:
-            totals.append(scenario[attr])
-        all_totals.append(totals)
-    config.scenarios = scenarios
-    config.totals = all_totals
-    config.logger.debug(f"\t✔️  Set raw totals: {config.totals}")
-    config.logger.debug(f"\t✔️  Set scenario names: {config.scenarios}")
+def set_raw_files_data(data):
+    config.raw_files_data = data
 
+def get_raw_files_data():
+    return config.raw_files_data
 
-def get_scenarios():
-    return config.scenarios
+def set_scenario_names(names):
+    config.scenario_names = names
 
-def get_totals():
-    return config.totals
+def get_scenario_names():
+    return config.scenario_names
+
+def set_raw_attr_values(raw_values):
+    config.raw_attr_values = raw_values
+
+def get_raw_attr_values():
+    return config.raw_attr_values
 
 """ Normalized data """
 def set_attributes_norm(new_attributes_norm):
@@ -211,8 +208,9 @@ def write_to_csv(filepath, data):
         writer.writerows(data)
     config.logger.info(f"\t✔️  Saved raw data to {os.path.basename(filepath)}")
 
-def load_totals_csv(filepath):
-    config.logger.debug(f"\tLoading totals CSV")
+def load_totals_csv(filepath=config.TOTALS_FILEPATH):
+    logger.debug(f"\n⏳Loading totals CSV at\n\t{filepath}")
+    validate_filepath(filepath)
     scenarios = []
     matrix = []
 
@@ -256,6 +254,42 @@ def write_scores_to_csv(filepath, scenario_scores):
             writer.writerow([scenario, round(float(score), 4)])
     config.logger.debug(f"\t✔️  Weighted scores written to:\n\t{output_filepath}")
 
+"""
+First attempts to
+
+"""
+def load_raw_values(filepath=TOTALS_FILEPATH, use_csv=False):
+    if (has_saved_data() and not use_CSV):
+        logger.debug("...Loading raw values from config")
+        scenarios, raw_values = load_config_totals()
+        if(is_load_successful(scenarios, raw_values)):
+            logger.debug("\t✔️  Successfully loaded totals data from config")
+            return scenarios, raw_values
+        logger.debug("...Failed to load raw values from config")
+
+    logger.debug("...Loading raw values from CSV")
+    scenarios, raw_values = load_totals_csv(filepath)
+    if(is_load_successful(scenarios, raw_values)):
+        logger.debug("\t✔️  Successfully loaded totals data from CSV")
+        return scenarios, raw_values
+    else:
+        raise ValueException("Failed to load totals from config or CSV)
+
+
+
+"Load totals from config file. Assumes extract_data ran before process_data in pipeline"
+def load_config_totals():
+    scenarios = get_scenario_names();
+    raw_values = get_raw_attr_values();
+    return scenarios, raw_values
+
+def is_load_successful(scenarios, matrix):
+    if scenarios is None or totals is None:
+        logger.warn(f"❓Failed to load totals data")
+        return False
+    logger.info(f"Successfully loaded totals data")
+    return True
+
 
 
 """-------------------------
@@ -264,12 +298,21 @@ def write_scores_to_csv(filepath, scenario_scores):
 
 def validate_filepath(filepath, expected_type):
     if not filepath.lower().endswith(expected_type):
-        config.logger.error(f"...ERROR: Specified filepath is not a CSV.")
-        raise TypeError("Specified filepath is not a CSV.")
+        config.logger.error(f"...ERROR: Specified filepath is not a {expected_type}.")
+        raise TypeError("Specified filepath is not a {expected_type}.")
     if not os.path.exists(filepath):
         config.logger.error(f"....ERROR: File '{filepath}' does not exist.")
         raise ValueError("File '{filepath}' does not exist.")
     return True
+
+def has_totals_csv():
+    try:
+        config.logger.debug("Checking if saved data is available")
+        return validate_filepath(config.TOTALS_FILEPATH, "csv")
+    except ValueError as e:
+        config.logger.debug("No saved data available")
+        return False
+
 
 def validate_crct_json(json):
     if "areas" not in json or not isinstance(json["areas"], list):
