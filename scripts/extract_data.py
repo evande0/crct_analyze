@@ -27,27 +27,28 @@ def extract_all_data(folder):
     # Includes scenario names and attribute totals for each scenario
     files_data = []
     while file is not None:
-        file_data, file_totals = extract_project_data(file)
-        files_data.append(file_data)
+        totals = extract_project_data(file)
+        files_data.append(totals)
         count += 1
         file = get_next(project_files)
     if count == 0:
         raise FileNotFoundError(f"No JSON files found at '{folder}'")
 
-    # Sort totals CSV by scenario name
-    utils.sort_csv(TOTALS_FILEPATH, 0, True)
+    utils.sort_csv(TOTALS_FILEPATH, 0, True) # Sort by scenario name
     save_extracted_to_config(files_data)
     logger.info(f"\t✔️  Extracted data from {count} JSON files in '{folder}'")
+    logger.warning(f"✅ Data extraction complete.")
+
 
 def save_extracted_to_config(files_data):
-    set_raw_files_data(files_data)
-    config.logger.debug(f"\t✔️  Set raw files data: {config.raw_files_data}")
+    utils.set_raw_files_data(files_data)
+    logger.debug(f"\t✔️  Set raw files data: {utils.get_raw_files_data()}")
 
-    names, raw_attr_values = split_names_values_lists(files_data)
-    set_scenario_names(names)
-    config.logger.debug(f"\t✔️  Set scenario names: {config.scenario_names}")
-    set_raw_attr_values(raw_attr_values)
-    config.logger.debug(f"\t✔️  Set raw attributes data by scenario: {config.raw_attr_values}")
+    names, raw_attributes = split_names_values_lists(files_data)
+    utils.set_scenario_names(names)
+    logger.debug(f"\t✔️  Set scenario names: {utils.get_scenario_names()}")
+    utils.set_raw_attributes(raw_attributes)
+    logger.debug(f"\t✔️  Set raw attributes data by scenario: {utils.get_raw_attributes()}")
 
 def extract_project_data(filepath):
     logger.info(f"⏳Extracting data from {filepath}")
@@ -57,18 +58,18 @@ def extract_project_data(filepath):
     utils.validate_crct_json(json)
 
     # Extract data from project JSON
-    project_data = get_rows(json)
+    file_data = get_rows(json)
 
     # Calculate attribute totals for this scenario
-    scenario_totals = calc_file_totals(project_data, filepath)
-    project_data.append(scenario_totals)
+    totals = calc_file_totals(file_data, filepath)
+    file_data.append(totals)
 
     # Save extracted data to CSV
-    append_to_totals_csv(scenario_totals)
-    utils.write_to_csv(filepath, project_data)
+    append_to_totals_csv(totals)
+    utils.write_to_csv(filepath, file_data)
     logger.info(f"\t✔️  Finished extracting data from {os.path.basename(filepath)}.")
 
-    return file_data, scenario_totals
+    return totals
 
 
 
@@ -76,36 +77,28 @@ def extract_project_data(filepath):
 Strips files_data down to a list of scenario names and list of scenario attributes values
 """
 def split_names_values_lists(files_data):
-    scenario_names = []
-    scenarios_attributes = []
+    names = []
+    attributes = []
     for scenario in files_data:
-        scenario_names.append(scenario["Name"])
-        scenarios_attributes.append(extract_attributes(scenario))
+        names.append(scenario["Name"])
+        attributes.append(extract_attributes(scenario))
+
+    # Sort by scenario name
+    sorted_pairs = sorted(
+        zip(names, attributes),
+        key=lambda x: x[0]
+    )
+    names, attributes = zip(*sorted_pairs)
+    scenario_names = list(names)
+    scenarios_attributes = np.array(attributes)
     return scenario_names, scenarios_attributes
 
 def extract_attributes(scenario):
     attributes = []
-    for attr in config.ATTRIBUTES_LIST:
+    for attr in ATTRIBUTES_LIST:
         attributes.append(scenario[attr])
-    scenario_names.append(scenario["Name"])
     return attributes
 
-
-"""
-def set_raw_data(new_totals):
-    all_totals = []
-    scenarios = []
-    for scenario in new_totals:
-        scenarios.append(scenario["Name"])
-        totals = []
-        for attr in config.ATTRIBUTES_LIST:
-            totals.append(scenario[attr])
-        all_totals.append(totals)
-    config.scenarios = scenarios
-    config.totals = all_totals
-    config.logger.debug(f"\t✔️  Set raw totals: {config.totals}")
-    config.logger.debug(f"\t✔️  Set scenario names: {config.scenarios}")
-"""
 
 def get_rows(data):
     logger.debug("⏳Getting rows from data...")
@@ -127,8 +120,7 @@ def get_rows(data):
 
 def calc_file_totals(rows, filepath):
     logger.debug(f"⏳Calculating totals for {os.path.basename(filepath)}...")
-    scenario_name = os.path.basename(filepath);
-    scenario_totals = {"Name" : f"{scenario_name}", "MeasureCode": "-"}
+    totals = {"Name" : f"{os.path.basename(filepath)}", "MeasureCode": "-"}
     for key in HEADERS[2:]:
         total = 0.0
         for row in rows:
@@ -138,10 +130,11 @@ def calc_file_totals(rows, filepath):
                 except (ValueError, TypeError):
                     pass
             else:
-                scenario_totals[key] = row[key]
-        scenario_totals[key] = round(total, 5)
-    logger.info(f"\t✔️  Calculated totals for {scenario_name}")
-    return scenario_totals
+                totals[key] = row[key]
+        totals[key] = round(total, 5)
+#         logger.debug(f"....Set totals value for key {key} to {totals[key]}")
+    logger.info(f"\t✔️  Calculated totals for {os.path.basename(filepath)}")
+    return totals
 
 def append_to_totals_csv(totals):
     logger.debug(f"⏳Appending totals to {TOTALS_FILENAME}...")

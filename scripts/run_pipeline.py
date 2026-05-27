@@ -21,29 +21,27 @@ Assumptions
 def run_full_pipeline(args, logger):
     logger.warning("\n⏳ Begin running data pipeline")
     extract_all_data(args.folder)
-#     try:
-#         if (not has_saved_data() || args.extract):
-#             extract_all_data(args.folder)
-#             logger.warning(f"✅ Data extraction complete.")
-#         else:
-#             logger.warning("Skipping data extraction. Using 'data/scenario_totals.csv'")
-#
-#         process_data()
-#         logger.warning(f"✅ Processing complete.")
-#
-#         analyze_data(args.showradar)
-#         logger.warning(f"✅ Analysis complete.")
-#
-#         logger.warning("🎉 Data pipeline completed successfully.")
-#         logger.warning(f"📁 See data and analysis in {SAVE_DIR}\n")
-#
-#         run_sensitivity_analysis()
-#     except Exception as e:
-#         log_failure(e, logger)
-#     finally:
-#         # Warn user if running out of log file space
-#         check_log_rotation_limits(LOG_FILE)
+    try:
+        extract_data(args.extract)
+        process_data()
+        analyze_data(args.showradar)
 
+        logger.warning("🎉 Data pipeline completed successfully.")
+        logger.warning(f"📁 See data and analysis in {SAVE_DIR}\n")
+    except Exception as e:
+        log_failure(e, logger)
+    finally:
+        if (args.sensitivity):
+            run_sensitivity_analysis()
+        # Warn user if running out of log file space
+        check_log_rotation_limits(LOG_FILE)
+
+def extract_data(force_extract):
+    if (not has_totals_csv() or force_extract):
+        print(f"Extracting data: has totals={has_totals_csv()}, extract={force_extract}")
+        extract_all_data(args.folder)
+    else:
+        logger.warning("Skipping data extraction. Using saved data instead.")
 
 
 def log_failure(e, logger):
@@ -71,6 +69,7 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--debug", action="store_true", help=HELP_DEBUG)
     parser.add_argument("-q", "--quiet", action="store_true", help=HELP_QUIET)
     parser.add_argument("-x","--extract", action="store_true", help=HELP_EXTRACT)
+    parser.add_argument("-n","--sensitivity", action="store_true", help=HELP_SENSITIVITY)
     args = parser.parse_args()
 
     logger = init_logging(LOG_FILE, args.verbose, args.debug, args.quiet)

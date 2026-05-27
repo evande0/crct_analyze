@@ -16,7 +16,7 @@ def init_analyze():
 
 def analyze_data(showradar):
     # Load data from Process stage
-    scenarios = get_scenarios()
+    scenarios = get_scenario_names()
     if not scenarios:
         logger.error("❗Could not retrieve scenarios data from Config.")
         raise ValueError("Array of scenario names was empty.")
@@ -38,6 +38,8 @@ def analyze_data(showradar):
 
     # Radar chart analysis
     plot_radar_charts(scenarios, weighted_attributes, config.ATTRIBUTES_LIST, showradar)
+
+    logger.warning(f"✅ Analysis complete.")
 
 
 """-------------------------

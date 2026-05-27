@@ -13,23 +13,17 @@ logger = None
 """
 Loads extracted data, inverts cost criteria, and applies L2 normalization
 """
-def process_data():
-    scenarios, raw_values = load_raw_values()
+def process_data(use_csv=False):
+    scenarios, raw_values = load_raw_values(use_csv)
+    if (not is_load_successful(scenarios, raw_values)):
+        raise RuntimeError("❗Failed to load raw data. Please rerun pipeline.\n")
 
-
-    # Sort by scenario name
-    sorted_pairs = sorted(
-        zip(scenarios, raw_values),
-        key=lambda x: x[0]
-    )
-    scenarios, raw_values = zip(*sorted_pairs)
-    scenarios = list(scenarios)
-    matrix = np.array(raw_values)
-
-    validate_attributes_matrix(matrix)
+    validate_attributes_matrix(raw_values)
+    print(f"Expect scenarios are already sorted: {scenarios}")
+    print(f"Expect raw values are already sorted: {raw_values}")
 
     # Costs are a negative criteria
-    attributes_matrix = invert_costs(matrix);
+    attributes_matrix = invert_costs(raw_values);
 
     # Normalize column vectors of matrix
     attributes_norm = l2_norm(attributes_matrix)
@@ -61,6 +55,8 @@ def process_data():
     logger.debug("⏳Saving processed data for analysis")
     np.savetxt(f"{PROCESSED_DIR}/l2norm.csv", attributes_norm, delimiter=',', fmt='%10.5f')
     set_attributes_norm(attributes_norm)
+
+    logger.warning(f"✅ Processing complete.")
 
 
 

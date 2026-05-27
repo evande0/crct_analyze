@@ -9,6 +9,9 @@ from process_data import invert_costs, l2_norm, compute_weighted_scores
 
 logger = None
 
+"""
+Assumes data pipeline has been run at least once OR extract=True
+"""
 def run_sensitivity_analysis(step_size=0.05, extract=False):
     global logger
     logger = utils.get_logger()
@@ -17,8 +20,13 @@ def run_sensitivity_analysis(step_size=0.05, extract=False):
         utils.set_logger(logger)
     logger.warning(f"\n⏳ Starting Criteria Sensitivity Analysis (Step Size: {step_size})")
 
-    # Load data
-    scenarios, matrix = utils.load_totals(TOTALS_FILEPATH, extract)
+    # Extract data first if necessary
+    if (extract):
+        extract_all_data(PROJ_DIR)
+    scenarios, matrix = utils.load_raw_values(TOTALS_FILEPATH, extract)
+
+    if (not is_load_successful(scenarios, matrix)):
+        logger.error("Failed to load saved data. Rerun with -x (--extract) option")
 
     # Process data
     logger.info("...Processing data")

@@ -124,10 +124,12 @@ def set_scenario_names(names):
 def get_scenario_names():
     return config.scenario_names
 
-def set_raw_attr_values(raw_values):
-    config.raw_attr_values = raw_values
+def set_raw_attributes(raw_values):
+#     print(f"attempting to save raw_values: {raw_values}")
+    config.raw_attr_values = np.array(raw_values, dtype=float)
+#     config.raw_attributes = raw_values
 
-def get_raw_attr_values():
+def get_raw_attributes():
     return config.raw_attr_values
 
 """ Normalized data """
@@ -208,25 +210,6 @@ def write_to_csv(filepath, data):
         writer.writerows(data)
     config.logger.info(f"\t✔️  Saved raw data to {os.path.basename(filepath)}")
 
-def load_totals_csv(filepath=config.TOTALS_FILEPATH):
-    logger.debug(f"\n⏳Loading totals CSV at\n\t{filepath}")
-    validate_filepath(filepath)
-    scenarios = []
-    matrix = []
-
-    with open(filepath, "r", encoding="utf-8") as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            scenarios.append(row.get("Name", ""))
-            values = []
-            for attr in config.ATTRIBUTES_LIST:
-                value = float(row.get(attr, 0.0))
-                values.append(value)
-            matrix.append(values)
-    A = np.array(matrix, dtype=float)
-    config.logger.debug(f"\t✔️  Loaded attributes matrix with shape {A.shape}")
-    return scenarios, A
-
 def sort_csv(filepath, sort_col, has_headers):
     config.logger.debug(f"Sorting CSV file {filepath} by column {sort_col}")
     with open(filepath, mode='r', newline='', encoding='utf-8') as f:
@@ -255,39 +238,52 @@ def write_scores_to_csv(filepath, scenario_scores):
     config.logger.debug(f"\t✔️  Weighted scores written to:\n\t{output_filepath}")
 
 """
-First attempts to
+Attempts to load raw values from config or CSV, returns None if unsuccessful
 
 """
-def load_raw_values(filepath=TOTALS_FILEPATH, use_csv=False):
-    if (has_saved_data() and not use_CSV):
-        logger.debug("...Loading raw values from config")
-        scenarios, raw_values = load_config_totals()
-        if(is_load_successful(scenarios, raw_values)):
-            logger.debug("\t✔️  Successfully loaded totals data from config")
-            return scenarios, raw_values
-        logger.debug("...Failed to load raw values from config")
-
-    logger.debug("...Loading raw values from CSV")
-    scenarios, raw_values = load_totals_csv(filepath)
-    if(is_load_successful(scenarios, raw_values)):
-        logger.debug("\t✔️  Successfully loaded totals data from CSV")
-        return scenarios, raw_values
-    else:
-        raise ValueException("Failed to load totals from config or CSV)
-
+def load_raw_values(use_csv=False):
+    names = None
+    raw_values = None
+    if (not use_csv):
+        names, raw_values = load_config_totals()
+        use_csv = not is_load_successful(names, raw_values)
+    if (use_csv):
+        names, raw_values = load_csv_totals()
+    return names, raw_values
 
 
 "Load totals from config file. Assumes extract_data ran before process_data in pipeline"
 def load_config_totals():
+    config.logger.debug("...Loading raw values from config")
     scenarios = get_scenario_names();
-    raw_values = get_raw_attr_values();
+    raw_values = get_raw_attributes();
     return scenarios, raw_values
 
-def is_load_successful(scenarios, matrix):
-    if scenarios is None or totals is None:
-        logger.warn(f"❓Failed to load totals data")
+def load_csv_totals():
+    filepath = config.TOTALS_FILEPATH
+    config.logger.debug("...Loading raw values from CSV: {filepath}")
+    has_totals_csv()
+    names = []
+    raw_values = []
+
+    with open(filepath, "r", encoding="utf-8") as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            names.append(row.get("Name", ""))
+            values = []
+            for attr in config.ATTRIBUTES_LIST:
+                value = float(row.get(attr, 0.0))
+                values.append(value)
+            raw_values.append(values)
+    A = np.array(raw_values, dtype=float)
+    config.logger.debug(f"\t✔️  Loaded attributes matrix with shape {A.shape}")
+    return scenarios, A
+
+def is_load_successful(names, raw_values):
+    if names is None or raw_values is None:
+        logger.warn(f"❓Failed to load raw data")
         return False
-    logger.info(f"Successfully loaded totals data")
+    config.logger.info(f"\t✔️  Successfully loaded raw data")
     return True
 
 
@@ -306,8 +302,8 @@ def validate_filepath(filepath, expected_type):
     return True
 
 def has_totals_csv():
+    config.logger.debug("Checking if totals CSV is available")
     try:
-        config.logger.debug("Checking if saved data is available")
         return validate_filepath(config.TOTALS_FILEPATH, "csv")
     except ValueError as e:
         config.logger.debug("No saved data available")
