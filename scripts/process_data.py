@@ -13,10 +13,12 @@ logger = None
 """
 Loads extracted data, inverts cost criteria, and applies L2 normalization
 """
-def process_data(use_csv=False):
-    scenarios, raw_values = load_raw_values(use_csv)
+def process_data(use_config=False):
+
+    scenarios, raw_values = load_raw_values(use_config)
     if (not is_load_successful(scenarios, raw_values)):
-        raise RuntimeError("❗Failed to load raw data. Please rerun pipeline.\n")
+        logger.warning("Expected saved data, but none available. Extractin data...")
+        extract_all_data(PROJ_DIR)
 
     validate_attributes_matrix(raw_values)
     print(f"Expect scenarios are already sorted: {scenarios}")

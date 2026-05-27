@@ -43,12 +43,13 @@ def extract_all_data(folder):
 def save_extracted_to_config(files_data):
     utils.set_raw_files_data(files_data)
     logger.debug(f"\t✔️  Set raw files data: {utils.get_raw_files_data()}")
-
+    print(f"\t✔️  Set raw files data: {utils.get_raw_files_data()}")
     names, raw_attributes = split_names_values_lists(files_data)
     utils.set_scenario_names(names)
-    logger.debug(f"\t✔️  Set scenario names: {utils.get_scenario_names()}")
+    print(f"\t✔️  Set scenario names: {utils.get_scenario_names()}")
+
     utils.set_raw_attributes(raw_attributes)
-    logger.debug(f"\t✔️  Set raw attributes data by scenario: {utils.get_raw_attributes()}")
+    print(f"\t✔️ Set raw attributes data by scenario: {utils.get_raw_attributes()}")
 
 def extract_project_data(filepath):
     logger.info(f"⏳Extracting data from {filepath}")

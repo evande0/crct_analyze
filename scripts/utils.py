@@ -90,12 +90,11 @@ def check_log_rotation_limits(log_file):
     # Filter to ensure we only count the extensions that are digits
     rotation_count = sum(1 for f in existing_backups if f.split('.')[-1].isdigit())
 
-    remaining_slots = config.LOG_MAX_BACKUPS - rotation_count
 
 
-    if remaining_slots <= 0:
+    if rotation_count >= config.LOG_MAX_BACKUPS:
         config.logger.warn(f"\nWARNING: Max log files reached. Oldest log files are being overwritten at:\n{log_dir}")
-    elif remaining_slots <= config.LOG_MAX_WARN_THRESHOLD:
+    elif rotation_count >= config.LOG_MAX_WARN_THRESHOLD:
         config.logger.warn(f"\nWARNING: Current backup file count: {rotation_count} / {max_backups}")
         config.logger.warn(f"After reaching {config.LOG_MAX_BACKUPS} the oldest logs will be permanently overwritten.")
         config.logger.warn(f"If you wish to preserve your older log files, please back them up:\n{log_dir}")
@@ -182,6 +181,7 @@ def setup_totals_file():
         writer.writeheader()
     config.logger.debug(f"\t✔️  Created CSV for totals: {config.TOTALS_FILEPATH}")
 
+
 """-------------------------
     JSON & CSV utils
 -------------------------"""
@@ -241,13 +241,13 @@ def write_scores_to_csv(filepath, scenario_scores):
 Attempts to load raw values from config or CSV, returns None if unsuccessful
 
 """
-def load_raw_values(use_csv=False):
+def load_raw_values(use_config=False):
+    print(f"Use config saved data? {use_config}")
     names = None
     raw_values = None
-    if (not use_csv):
+    if (use_config):
         names, raw_values = load_config_totals()
-        use_csv = not is_load_successful(names, raw_values)
-    if (use_csv):
+    if (not is_load_successful(names, raw_values)):
         names, raw_values = load_csv_totals()
     return names, raw_values
 
@@ -255,16 +255,18 @@ def load_raw_values(use_csv=False):
 "Load totals from config file. Assumes extract_data ran before process_data in pipeline"
 def load_config_totals():
     config.logger.debug("...Loading raw values from config")
-    scenarios = get_scenario_names();
-    raw_values = get_raw_attributes();
-    return scenarios, raw_values
+    names = get_scenario_names()
+    raw_values = get_raw_attributes()
+    return names, raw_values
+
 
 def load_csv_totals():
     filepath = config.TOTALS_FILEPATH
-    config.logger.debug("...Loading raw values from CSV: {filepath}")
-    has_totals_csv()
+    if (not has_totals_csv()):
+        raise RuntimeException("Expected {filepath}, but it doesn't exist")
+    config.logger.debug(f"\tLoading totals CSV from {filepath}")
     names = []
-    raw_values = []
+    matrix = []
 
     with open(filepath, "r", encoding="utf-8") as file:
         reader = csv.DictReader(file)
@@ -274,14 +276,39 @@ def load_csv_totals():
             for attr in config.ATTRIBUTES_LIST:
                 value = float(row.get(attr, 0.0))
                 values.append(value)
-            raw_values.append(values)
-    A = np.array(raw_values, dtype=float)
-    config.logger.debug(f"\t✔️  Loaded attributes matrix with shape {A.shape}")
-    return scenarios, A
+            matrix.append(values)
+
+    attributes = np.array(matrix, dtype=float)
+    config.logger.debug(f"\t✔️  Loaded attributes matrix with shape {attributes.shape}")
+    # Save values to config
+    set_scenario_names(names)
+    set_raw_attributes(attributes)
+
+    return names, attributes
+#     filepath = config.TOTALS_FILEPATH
+#     if (not has_totals_csv()):
+#         raise RuntimeException("Expected {filepath}, but it doesn't exist")
+#     config.logger.debug("...Loading raw values from CSV: {filepath}")
+#     names = []
+#     raw_values = []
+#
+#     with open(filepath, "r", encoding="utf-8") as file:
+#         reader = csv.DictReader(file)
+#         for row in reader:
+#             names.append(row.get("Name", ""))
+#             values = []
+#             for attr in config.ATTRIBUTES_LIST:
+#                 value = float(row.get(attr, 0.0))
+#                 values.append(value)
+#             raw_values.append(values)
+#
+#     A = np.array(raw_values, dtype=float)
+#     config.logger.debug(f"\t✔️  Loaded attributes matrix with shape {A.shape}")
+#     return names, A
 
 def is_load_successful(names, raw_values):
     if names is None or raw_values is None:
-        logger.warn(f"❓Failed to load raw data")
+        config.logger.warn(f"❓Failed to load raw data")
         return False
     config.logger.info(f"\t✔️  Successfully loaded raw data")
     return True
@@ -335,12 +362,12 @@ def validate_weights():
 
 def validate_attributes_matrix(A):
     if A is None or len(A) == 0:
-        logger.error("...ERROR: Attributes matrix is empty")
+        config.logger.error("...ERROR: Attributes matrix is empty")
         raise ValueError("Attributes matrix is empty")
     num_cols = A.shape[1]
     num_attr = len(config.ATTRIBUTES_LIST)
     if num_cols != num_attr:
-        logger.error("...ERROR: Attributes matrix has {num_cols} but expected {num_attr}")
+        config.logger.error("...ERROR: Attributes matrix has {num_cols} but expected {num_attr}")
         raise ValueError("Attributes matrix does not have the expected dimensions.")
         return False
     return True

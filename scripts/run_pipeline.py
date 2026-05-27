@@ -20,10 +20,9 @@ Assumptions
 '''
 def run_full_pipeline(args, logger):
     logger.warning("\n⏳ Begin running data pipeline")
-    extract_all_data(args.folder)
     try:
-        extract_data(args.extract)
-        process_data()
+        use_config = extract_data(args.extract)
+        process_data(use_config)
         analyze_data(args.showradar)
 
         logger.warning("🎉 Data pipeline completed successfully.")
@@ -38,22 +37,23 @@ def run_full_pipeline(args, logger):
 
 def extract_data(force_extract):
     if (not has_totals_csv() or force_extract):
-        print(f"Extracting data: has totals={has_totals_csv()}, extract={force_extract}")
+        setup_totals_file()
         extract_all_data(args.folder)
+        return True
     else:
         logger.warning("Skipping data extraction. Using saved data instead.")
+        return False
 
 
 def log_failure(e, logger):
-        logger.critical(f"\nExiting data pipeline due to error: {e}")
-        logger.info(f"{e}", exc_info=True)
+        logger.critical(f"\nExiting data pipeline due to error:")
+        logger.critical(f"{e}", exc_info=True)
         logger.critical(f"\n❌ Data pipeline failed ❌")
         logger.critical(f"\nSee logs saved to {LOG_FILE}\n")
 
 def init_pipeline(logger):
     logger.debug("Initializing pipeline")
     create_dirs()
-    setup_totals_file()
     init_extract()
     init_process()
     init_analyze()

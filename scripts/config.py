@@ -41,8 +41,8 @@ LOG_MAX_SIZE_BYTES = 2 * 1024 * 1024
 # After reaching max backup log files, the oldest logs will be overwritten
 LOG_MAX_BACKUPS = 100
 
-# Remaining log backup files before user is warned. Set to -1 to disable checking.
-LOG_MAX_WARN_THRESHOLD = 3
+# Num backup files before user is warned. Set to -1 to disable checking.
+LOG_MAX_WARN_THRESHOLD = 97
 
 
 """
