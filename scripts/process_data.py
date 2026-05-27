@@ -14,15 +14,11 @@ logger = None
 Loads extracted data, inverts cost criteria, and applies L2 normalization
 """
 def process_data(use_config=False):
-
     scenarios, raw_values = load_raw_values(use_config)
     if (not is_load_successful(scenarios, raw_values)):
-        logger.warning("Expected saved data, but none available. Extractin data...")
+        logger.warning("Expected data to be saved before processing data. Extracting data now...")
         extract_all_data(PROJ_DIR)
-
     validate_attributes_matrix(raw_values)
-    print(f"Expect scenarios are already sorted: {scenarios}")
-    print(f"Expect raw values are already sorted: {raw_values}")
 
     # Costs are a negative criteria
     attributes_matrix = invert_costs(raw_values);
@@ -38,7 +34,7 @@ def process_data(use_config=False):
     logger.info(f"Using weights: {WEIGHTS}")
 
     # Compute weighted attributes
-    weighted_attributes = attributes_norm * config.WEIGHTS
+    weighted_attributes = np.round(attributes_norm * config.WEIGHTS, 7)
     np.savetxt(f"{PROCESSED_DIR}/weighted_attributes.csv", weighted_attributes, delimiter=',', fmt='%10.5f')
     set_weighted_attributes(weighted_attributes)
 
@@ -77,7 +73,7 @@ def invert_costs(matrix):
 
 def compute_weighted_scores(A_norm, weights):
     try:
-        return A_norm @ weights
+        return np.round(A_norm @ weights,7)
     except Exception as e:
         logger.error(f"....ERROR computing weighted scores: {e}")
         return None
@@ -119,7 +115,7 @@ def l2_norm(A):
     norms[norms == 0] = 1.0
 
     # Divide each element in a column by that column's L2 norm
-    A_norm = np.round(A / norms, 4) # Norm and round
+    A_norm = np.round(A / norms, 7) # Norm and round
     return A_norm
 
 """
@@ -133,7 +129,7 @@ def max_abs_norm(data):
     col_max_abs[col_max_abs == 0] = 1.0
 
     # Divide each element in a column by that column's max absolute value
-    normalized_data = data / col_max_abs
+    normalized_data = np.round(data / col_max_abs, 7)
     return normalized_data
 
 def init_process():

@@ -37,7 +37,6 @@ def run_full_pipeline(args, logger):
 
 def extract_data(force_extract):
     if (not has_totals_csv() or force_extract):
-        setup_totals_file()
         extract_all_data(args.folder)
         return True
     else:
@@ -51,9 +50,9 @@ def log_failure(e, logger):
         logger.critical(f"\n❌ Data pipeline failed ❌")
         logger.critical(f"\nSee logs saved to {LOG_FILE}\n")
 
-def init_pipeline(logger):
+def init_pipeline(logger, sens):
     logger.debug("Initializing pipeline")
-    create_dirs()
+    create_dirs(sens)
     init_extract()
     init_process()
     init_analyze()
@@ -77,7 +76,7 @@ if __name__ == "__main__":
     set_logger(logger)
     logger.debug(f"\nArgs: {args}\n")
 
-    init_pipeline(logger)
+    init_pipeline(logger, args.sensitivity)
     run_full_pipeline(args, logger)
 
     for handler in logger.handlers[:]:

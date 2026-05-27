@@ -5,7 +5,7 @@ import csv
 import matplotlib.pyplot as plt
 from config import *
 import utils
-from extract_data import init_extract
+from extract_data import init_extract, extract_all_data
 from process_data import init_process, invert_costs, l2_norm, compute_weighted_scores
 
 logger = None
@@ -13,13 +13,17 @@ BASELINE_WINNER = None
 START_WEIGHTS = None
 SCENARIOS = None
 
-def init():
+def init(extract):
     global logger
     logger = utils.get_logger()
     if logger is None:
         logger = utils.init_logging(LOG_FILE, verbose=True)
         utils.set_logger(logger)
-    os.makedirs(SENS_DIR, exist_ok=True)
+    if extract:
+        utils.create_dirs(sens=True)
+    else:
+        os.makedirs(SAVE_DIR, exist_ok=True)
+        os.makedirs(SENS_DIR, exist_ok=True)
     init_extract()
     init_process()
 
@@ -29,7 +33,7 @@ def init():
 Assumes data pipeline has been run at least once OR extract=True
 """
 def run_sensitivity_analysis(step_size=TARGET_STEP_SIZE, extract=False):
-    init()
+    init(extract)
     logger.warning(f"\n⏳ Starting Criteria Sensitivity Analysis (Step Size: {TARGET_STEP_SIZE})")
     global SCENARIOS
     SCENARIOS, matrix = load_data(extract)
@@ -77,12 +81,14 @@ def set_start_weights(num_attributes, step_size):
     START_WEIGHTS = np.full(num_attributes, non_target_start)
     logger.debug(f"Start Weights: {START_WEIGHTS}")
 
-def calculate_scores(writer, attributes_norm, weights):
-    scores = compute_weighted_scores(attributes_norm, weights)
+def calculate_scores(writer, attributes_norm, attr_weights):
+    if not np.isclose(attr_weights.sum(), 1.0):
+        raise ValueError("Something is wrong with the weights vector.")
+    scores = compute_weighted_scores(attributes_norm, attr_weights)
     sorted_indices = np.argsort(scores)[::-1]
     score_spread = float(scores[sorted_indices[0]] - scores[sorted_indices[-1]])
-    new_winner = SCENARIOS[sorted_indices[0]]
-    return new_winner, score_spread
+    this_winner = SCENARIOS[sorted_indices[0]]
+    return this_winner, score_spread
 
 
 def increment_weights(weights, target_idx):
@@ -92,39 +98,41 @@ def increment_weights(weights, target_idx):
         else:
             non_target_weight = weights[i] - NON_TARGET_STEP_SIZE
             weights[i] = max(non_target_weight, 0)
-    w_sum = round(weights.sum(),4)
-    logger.debug(f"   Incremented weights: {weights}, sum = {w_sum}")
-    if not np.isclose(w_sum, 1.0):
-        raise ValueError("Something is wrong with the weights vector.")
+
+    # Skip print for last iteration
+    if weights[target_idx] < 1.05:
+        w_sum = round(weights.sum(),4)
+        logger.debug(f"   Incremented weights: {weights}, sum = {w_sum}")
     return weights
 
 def get_attr_start_weights(target_idx):
     weights = START_WEIGHTS.copy()
     weights[target_idx] = 0
-    logger.warning(f"...Starting weights:\n{weights}")
+    logger.debug(f"...Starting weights:\n{weights}")
     return weights
 
 
 def sweep_attribute_weights(writer, attributes_norm):
+    test_weights = np.arange(0.0, 1.0 + TARGET_STEP_SIZE, TARGET_STEP_SIZE)
     for target_idx, target_attr in enumerate(ATTRIBUTES_LIST):
-        logger.warning(f"\n⚖️  Sweeping weights for attribute: {target_attr} ({target_idx})")
+        logger.info(f"\n⚖️  Sweeping weights for attribute: {target_attr} ({target_idx})")
         weights = get_attr_start_weights(target_idx)
         attr_winners = []
-        while weights[target_idx] <= 1:
+        while weights[target_idx] < 1 + TARGET_STEP_SIZE:
             this_winner, score_spread = calculate_scores(writer, attributes_norm, weights)
             rank_reversal = "YES" if this_winner != BASELINE_WINNER else "NO"
             attr_winners.append(this_winner)
             writer.writerow([target_attr, round(weights[target_idx], 4), rank_reversal, this_winner, round(score_spread, 4)])
             weights = increment_weights(weights, target_idx)
-        plot_stability(target_attr, weights, attr_winners, SENS_DIR)
+        plot_stability(target_attr, test_weights, attr_winners, SENS_DIR)
 
 def plot_stability(attr_name, weights, winners, save_path):
-    logger.warning(f"...Plotting stability for {attr_name}")
+    logger.info(f"...Plotting stability for {attr_name}")
     plt.figure(figsize=(10, 2))
 
     # Map unique winners to specific tracking colors
     unique_winners = list(set(winners))
-    color_map = plt.cm.get_cmap('Set3', len(unique_winners))
+    color_map = plt.get_cmap('Set3', len(unique_winners))
     winner_colors = {winner: color_map(i) for i, winner in enumerate(unique_winners)}
 
     for idx, (w, winner) in enumerate(zip(weights, winners)):
@@ -135,7 +143,7 @@ def plot_stability(attr_name, weights, winners, save_path):
 
     plt.title(f"Stability Map: Swapping Weights for {attr_name}", fontsize=11, fontweight='bold')
     plt.xlabel("Assigned Attribute Weight")
-    plt.xlim(-0.05, 1.05)
+    plt.xlim(-TARGET_STEP_SIZE, 1 + TARGET_STEP_SIZE)
     plt.yticks([])
 
     # Create clean legend handles

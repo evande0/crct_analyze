@@ -124,9 +124,7 @@ def get_scenario_names():
     return config.scenario_names
 
 def set_raw_attributes(raw_values):
-#     print(f"attempting to save raw_values: {raw_values}")
     config.raw_attr_values = np.array(raw_values, dtype=float)
-#     config.raw_attributes = raw_values
 
 def get_raw_attributes():
     return config.raw_attr_values
@@ -158,7 +156,7 @@ def get_weighted_attributes():
 """-------------------------
     Directory init
 -------------------------"""
-def create_dirs():
+def create_dirs(sens=False):
     os.makedirs(config.PROJ_DIR, exist_ok=True)
     os.makedirs(config.SAVE_DIR, exist_ok=True)
     os.makedirs(config.LOG_DIR, exist_ok=True)
@@ -173,6 +171,11 @@ def create_dirs():
     config.logger.debug(f"\t✔️  Raw data: {config.RAW_DIR}")
     config.logger.debug(f"\t✔️  Processed data:{config.PROCESSED_DIR}")
     config.logger.debug(f"\t✔️  PNG images: {config.PNG_DIR}")
+
+    if sens:
+        os.makedirs(config.SENS_DIR, exist_ok=True)
+        config.logger.debug(f"\t✔️  Sensitivity: {config.SENS_DIR}")
+
 
 
 def setup_totals_file():
@@ -237,12 +240,8 @@ def write_scores_to_csv(filepath, scenario_scores):
             writer.writerow([scenario, round(float(score), 4)])
     config.logger.debug(f"\t✔️  Weighted scores written to:\n\t{output_filepath}")
 
-"""
-Attempts to load raw values from config or CSV, returns None if unsuccessful
-
-"""
+"""Load totals from config file or CSV. Returns None if no data is saved"""
 def load_raw_values(use_config=False):
-    print(f"Use config saved data? {use_config}")
     names = None
     raw_values = None
     if (use_config):
@@ -252,7 +251,7 @@ def load_raw_values(use_config=False):
     return names, raw_values
 
 
-"Load totals from config file. Assumes extract_data ran before process_data in pipeline"
+"""Load totals from config file. Assumes extract_data ran before process_data in pipeline"""
 def load_config_totals():
     config.logger.debug("...Loading raw values from config")
     names = get_scenario_names()
@@ -289,7 +288,7 @@ def load_csv_totals():
 
 def is_load_successful(names, raw_values):
     if names is None or raw_values is None:
-        config.logger.warn(f"❓Failed to load raw data")
+        config.logger.info(f"❓Failed to load raw data")
         return False
     config.logger.info(f"\t✔️  Successfully loaded raw data")
     return True
@@ -345,10 +344,13 @@ def validate_attributes_matrix(A):
     if A is None or len(A) == 0:
         config.logger.error("...ERROR: Attributes matrix is empty")
         raise ValueError("Attributes matrix is empty")
-    num_cols = A.shape[1]
+    shape = A.shape
     num_attr = len(config.ATTRIBUTES_LIST)
-    if num_cols != num_attr:
+    num_scenarios = len(get_scenario_names())
+    if shape[0] != num_scenarios:
+        config.logger.error("...ERROR: Attributes matrix has {shape[0]} but expected {num_scenarios}")
+        raise ValueError("Attributes matrix does not have the expected dimensions.")
+    if shape[1] != num_attr:
         config.logger.error("...ERROR: Attributes matrix has {num_cols} but expected {num_attr}")
         raise ValueError("Attributes matrix does not have the expected dimensions.")
-        return False
     return True
