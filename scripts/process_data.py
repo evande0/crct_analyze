@@ -43,6 +43,7 @@ def process_data(use_config=False):
     set_weighted_attributes(weighted_attributes)
 
     # Compute scores
+    logger.debug("⏳Computing weighted scores")
     scores = compute_weighted_scores(attributes_norm, WEIGHTS)
     if scores is None:
         logger.error("❗Failed to compute scores. Aborting score computation.\n")
@@ -75,7 +76,6 @@ def invert_costs(matrix):
     return A
 
 def compute_weighted_scores(A_norm, weights):
-    logger.debug("\n⏳Computing weighted scores")
     try:
         return A_norm @ weights
     except Exception as e:

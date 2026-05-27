@@ -285,26 +285,7 @@ def load_csv_totals():
     set_raw_attributes(attributes)
 
     return names, attributes
-#     filepath = config.TOTALS_FILEPATH
-#     if (not has_totals_csv()):
-#         raise RuntimeException("Expected {filepath}, but it doesn't exist")
-#     config.logger.debug("...Loading raw values from CSV: {filepath}")
-#     names = []
-#     raw_values = []
-#
-#     with open(filepath, "r", encoding="utf-8") as file:
-#         reader = csv.DictReader(file)
-#         for row in reader:
-#             names.append(row.get("Name", ""))
-#             values = []
-#             for attr in config.ATTRIBUTES_LIST:
-#                 value = float(row.get(attr, 0.0))
-#                 values.append(value)
-#             raw_values.append(values)
-#
-#     A = np.array(raw_values, dtype=float)
-#     config.logger.debug(f"\t✔️  Loaded attributes matrix with shape {A.shape}")
-#     return names, A
+
 
 def is_load_successful(names, raw_values):
     if names is None or raw_values is None:

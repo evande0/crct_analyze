@@ -23,6 +23,8 @@ SAVE_DIR = f"{PARENT_DIR}/analysis/{TIMESTAMP}"
 RAW_DIR = f"{SAVE_DIR}/raw"
 PROCESSED_DIR = f"{SAVE_DIR}/processed"
 PNG_DIR = f"{SAVE_DIR}/png_results"
+SENS_DIR = f"{PROJ_DIR}/data/sensitivity"
+SENS_FILEPATH = f"{SENS_DIR}/sensitivity_summary.csv"
 TOTALS_FILENAME = f"scenario_totals.csv"
 TOTALS_FILEPATH = f"{PARENT_DIR}/data/{TOTALS_FILENAME}"
 
@@ -52,6 +54,7 @@ Score sorting
 2: Sort by score, descending
 """
 SORT_TYPE = 0
+
 
 '''
 Weights - Edit me to reflect criteria priorities
@@ -148,6 +151,13 @@ ATTRIBUTES_LIST = [
     "Evapotranspiration",
     "StorageCapacity"
 ]
+
+'''
+Sensitivity
+'''
+TARGET_STEP_SIZE = 0.05
+NON_TARGET_STEP_SIZE = TARGET_STEP_SIZE / (len(ATTRIBUTES_LIST) - 1)
+''''''
 
 
 # Help Strings
