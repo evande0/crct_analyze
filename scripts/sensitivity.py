@@ -45,57 +45,6 @@ def sweep_attribute_weights(writer, attributes_norm):
 
 
 """
-Initialize sensitivity analysis
-"""
-def init_sensitivity():
-    init_logger()
-    init_dirs()
-    init_extract()
-    proc.init_process()
-    load_data()
-    init_baseline_winner()
-    init_base_weights()
-
-def init_logger():
-    global logger
-    logger = utils.get_logger()
-    if logger is None:
-        logger = utils.init_logging(LOG_FILE, verbose=True)
-        utils.set_logger(logger)
-    logger.debug("Logger initiatied")
-
-def init_dirs():
-    utils.create_dirs(png=False, processed=False, sens=True)
-
-
-def load_data():
-    global scenario_names, attributes_raw, attributes_norm
-    scenario_names, attributes_raw = extract_all_data(PROJ_DIR)
-    attributes_norm = proc.normalize_attributes(attributes_raw)
-
-def init_baseline_winner():
-    global baseline_winner
-    logger.info("...Computing baseline scores using even weights")
-    baseline_scores = proc.compute_weighted_scores(attributes_norm, FLAT_WEIGHTS)
-    baseline_ranking = [scenario_names[idx] for idx in np.argsort(baseline_scores)[::-1]]
-    logger.info(f"\t✔️  Computed baseline ranking: {baseline_ranking}")
-    baseline_winner = baseline_ranking[0]
-    logger.info(f"Baseline Winner: {baseline_winner}")
-
-def init_base_weights():
-    num_attributes = len(ATTRIBUTES_LIST)
-    step_size = TARGET_STEP_SIZE
-    non_target_count = num_attributes - 1
-    target_start = 0
-    non_target_start = 1 / non_target_count
-    non_target_step = step_size / non_target_count
-    global base_weights
-    base_weights = np.full(num_attributes, non_target_start)
-    # Target attribute still needs to be set to 0
-    logger.debug(f"Base Weights: {base_weights}")
-
-
-"""
 Weights & Scores
 """
 
@@ -137,7 +86,7 @@ def plot_stability(attr_name, weights, winners, save_path):
     plt.figure(figsize=(10, 2))
     unique_winners, winner_colors = get_unique_winner_colors(winners);
     plot_winners(weights, winners, winner_colors)
-    plot_labels(winners)
+    plot_labels(attr_name)
     plot_legend(unique_winners, winner_colors, attr_name, save_path)
 
 def get_unique_winner_colors(winners):
@@ -166,6 +115,57 @@ def plot_legend(unique_winners, winner_colors, attr_name, save_path):
     plt.tight_layout()
     plt.savefig(f"{save_path}/stability_{attr_name}.png", bbox_inches='tight')
     plt.close()
+
+
+"""
+Initialize sensitivity analysis
+"""
+def init_sensitivity():
+    init_logger()
+    init_dirs()
+    init_extract()
+    proc.init_process()
+    load_data()
+    init_baseline_winner()
+    init_base_weights()
+
+def init_logger():
+    global logger
+    logger = utils.get_logger()
+    if logger is None:
+        logger = utils.init_logging(LOG_FILE, verbose=True)
+        utils.set_logger(logger)
+    logger.debug("Logger initiatied")
+
+def init_dirs():
+    utils.create_dirs(png=False, processed=False, sens=True)
+
+def load_data():
+    global scenario_names, attributes_raw, attributes_norm
+    scenario_names, attributes_raw = extract_all_data(PROJ_DIR)
+    attributes_norm = proc.normalize_attributes(attributes_raw)
+
+def init_baseline_winner():
+    global baseline_winner
+    logger.info("...Computing baseline scores using even weights")
+    baseline_scores = proc.compute_weighted_scores(attributes_norm, FLAT_WEIGHTS)
+    baseline_ranking = [scenario_names[idx] for idx in np.argsort(baseline_scores)[::-1]]
+    logger.info(f"\t✔️  Computed baseline ranking: {baseline_ranking}")
+    baseline_winner = baseline_ranking[0]
+    logger.info(f"Baseline Winner: {baseline_winner}")
+
+def init_base_weights():
+    num_attributes = len(ATTRIBUTES_LIST)
+    step_size = TARGET_STEP_SIZE
+    non_target_count = num_attributes - 1
+    target_start = 0
+    non_target_start = 1 / non_target_count
+    non_target_step = step_size / non_target_count
+    global base_weights
+    base_weights = np.full(num_attributes, non_target_start)
+    # Target attribute still needs to be set to 0
+    logger.debug(f"Base Weights: {base_weights}")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run independent criteria sensitivity analysis sweeps.")
