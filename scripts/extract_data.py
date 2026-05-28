@@ -35,19 +35,14 @@ def extract_all_data(folder):
         raise FileNotFoundError(f"No JSON files found at '{folder}'")
 
     utils.sort_csv(TOTALS_FILEPATH, 0, True) # Sort by scenario name
-    save_extracted_to_config(files_data)
+    names, raw_attributes = split_names_values_lists(files_data)
+
+    save_extracted_to_config(files_data, names, raw_attributes)
     logger.info(f"\t✔️  Extracted data from {count} JSON files in '{folder}'")
     logger.warning(f"✅ Data extraction complete.")
 
+    return names, raw_attributes
 
-def save_extracted_to_config(files_data):
-    utils.set_raw_files_data(files_data)
-    logger.debug(f"\t✔️  Set raw files data: {utils.get_raw_files_data()}")
-    names, raw_attributes = split_names_values_lists(files_data)
-    utils.set_scenario_names(names)
-    logger.debug(f"\t✔️  Set scenario names: {utils.get_scenario_names()}")
-    utils.set_raw_attributes(raw_attributes)
-    logger.debug(f"\t✔️ Set raw attributes data by scenario: {utils.get_raw_attributes()}")
 
 def extract_project_data(filepath):
     logger.info(f"⏳Extracting data from {filepath}")
@@ -57,7 +52,7 @@ def extract_project_data(filepath):
     utils.validate_crct_json(json)
 
     # Extract data from project JSON
-    file_data = get_rows(json)
+    file_data = extract_data_from_json(json)
 
     # Calculate attribute totals for this scenario
     totals = calc_file_totals(file_data, filepath)
@@ -71,7 +66,6 @@ def extract_project_data(filepath):
     return totals
 
 
-
 """
 Strips files_data down to a list of scenario names and list of scenario attributes values
 """
@@ -82,7 +76,6 @@ def split_names_values_lists(files_data):
         names.append(scenario["Name"])
         attributes.append(extract_attributes(scenario))
 
-    # Sort by scenario name
     sorted_pairs = sorted(
         zip(names, attributes),
         key=lambda x: x[0]
@@ -97,25 +90,6 @@ def extract_attributes(scenario):
     for attr in ATTRIBUTES_LIST:
         attributes.append(scenario[attr])
     return attributes
-
-
-def get_rows(data):
-    logger.debug("⏳Getting rows from data...")
-
-    rows = []
-    for area in data["areas"]:
-        props = area.get("properties", {})
-        api_data = props.get("apiData", {})
-        row = {}
-        for field, (group, key) in FIELD_MAP.items():
-            if group == "properties":
-                row[field] = props.get(key, "")
-            elif group == "apiData":
-                row[field] = api_data.get(key, "")
-#         logger.debug(f"....Extracted row: {row}")
-        rows.append(row)
-    logger.info("\t✔️  Extracted rows from data")
-    return rows
 
 def calc_file_totals(rows, filepath):
     logger.debug(f"⏳Calculating totals for {os.path.basename(filepath)}...")
@@ -135,6 +109,28 @@ def calc_file_totals(rows, filepath):
     logger.info(f"\t✔️  Calculated totals for {os.path.basename(filepath)}")
     return totals
 
+
+"""
+JSON, CSV, config.py
+"""
+
+def extract_data_from_json(data):
+    logger.debug("⏳Getting raw attribute data from json...")
+    rows = []
+    for area in data["areas"]:
+        props = area.get("properties", {})
+        api_data = props.get("apiData", {})
+        row = {}
+        for field, (group, key) in FIELD_MAP.items():
+            if group == "properties":
+                row[field] = props.get(key, "")
+            elif group == "apiData":
+                row[field] = api_data.get(key, "")
+#         logger.debug(f"....Extracted row: {row}")
+        rows.append(row)
+    logger.info("\t✔️  Extracted raw attribute data from json")
+    return rows
+
 def append_to_totals_csv(totals):
     logger.debug(f"⏳Appending totals to {TOTALS_FILENAME}...")
     with open(TOTALS_FILEPATH, "a", newline="", encoding="utf-8") as savetotals:
@@ -142,6 +138,18 @@ def append_to_totals_csv(totals):
         writer.writerow(totals)
     logger.info(f"\t✔️  Appended scenario totals to {TOTALS_FILENAME}")
 
+def save_extracted_to_config(files_data, names, raw_attributes):
+    utils.set_raw_files_data(files_data)
+    logger.debug(f"\t✔️  Set raw files data: {utils.get_raw_files_data()}")
+    utils.set_scenario_names(names)
+    logger.debug(f"\t✔️  Set scenario names: {utils.get_scenario_names()}")
+    utils.set_raw_attributes(raw_attributes)
+    logger.debug(f"\t✔️ Set raw attributes data by scenario: {utils.get_raw_attributes()}")
+
+
+"""
+Misc
+"""
 def get_next(iterable):
     try:
         first = next(iterable)

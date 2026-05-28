@@ -156,22 +156,27 @@ def get_weighted_attributes():
 """-------------------------
     Directory init
 -------------------------"""
-def create_dirs(sens=False):
-    os.makedirs(config.PROJ_DIR, exist_ok=True)
-    os.makedirs(config.SAVE_DIR, exist_ok=True)
-    os.makedirs(config.LOG_DIR, exist_ok=True)
-    os.makedirs(config.RAW_DIR, exist_ok=True)
-    os.makedirs(config.PROCESSED_DIR, exist_ok=True)
-    os.makedirs(config.PNG_DIR, exist_ok=True)
+def create_dirs(sens=False,proj=True, save=True, log=True, raw=True, processed=True, png=True):
+    config.logger.debug("Creating directories for pipeline artifacts...")
 
-    config.logger.debug("Created directories for pipeline artifacts")
-    config.logger.debug(f"\t✔️  Project directory: {config.PROJ_DIR}")
-    config.logger.debug(f"\t✔️  Save directory: {config.SAVE_DIR}")
-    config.logger.debug(f"\t✔️  Log files: {config.LOG_DIR}")
-    config.logger.debug(f"\t✔️  Raw data: {config.RAW_DIR}")
-    config.logger.debug(f"\t✔️  Processed data:{config.PROCESSED_DIR}")
-    config.logger.debug(f"\t✔️  PNG images: {config.PNG_DIR}")
-
+    if proj:
+        os.makedirs(config.PROJ_DIR, exist_ok=True)
+        config.logger.debug(f"\t✔️  Project directory: {config.PROJ_DIR}")
+    if save:
+        os.makedirs(config.SAVE_DIR, exist_ok=True)
+        config.logger.debug(f"\t✔️  Save directory: {config.SAVE_DIR}")
+    if log:
+        os.makedirs(config.LOG_DIR, exist_ok=True)
+        config.logger.debug(f"\t✔️  Log files: {config.LOG_DIR}")
+    if raw:
+        os.makedirs(config.RAW_DIR, exist_ok=True)
+        config.logger.debug(f"\t✔️  Raw data: {config.RAW_DIR}")
+    if processed:
+        os.makedirs(config.PROCESSED_DIR, exist_ok=True)
+        config.logger.debug(f"\t✔️  Processed data:{config.PROCESSED_DIR}")
+    if png:
+        os.makedirs(config.PNG_DIR, exist_ok=True)
+        config.logger.debug("Created directories for pipeline artifacts")
     if sens:
         os.makedirs(config.SENS_DIR, exist_ok=True)
         config.logger.debug(f"\t✔️  Sensitivity: {config.SENS_DIR}")

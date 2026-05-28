@@ -6,7 +6,7 @@ from utils import *
 from extract_data import *
 from process_data import *
 from analyze_data import *
-from sensitivity import run_sensitivity_analysis
+from sensitivity import init_sensitivity, run_sensitivity_analysis
 
 '''
 Assumptions
@@ -56,6 +56,8 @@ def init_pipeline(logger, sens):
     init_extract()
     init_process()
     init_analyze()
+    if sens:
+        init_sensitivity()
 
 '''
     Run the pipeline by calling 'python3 run_pipeline.py'
