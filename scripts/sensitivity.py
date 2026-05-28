@@ -16,32 +16,39 @@ attributes_norm = None
 baseline_winner = None
 base_weights = None
 
+
+
 """
 Run sensitivity analysis
-"""
-def run_sensitivity_analysis(step_size=TARGET_STEP_SIZE):
-    logger.warning(f"\n⏳ Starting Criteria Sensitivity Analysis (Step Size: {TARGET_STEP_SIZE})")
-    # Sweep and record results
-    with open(SENS_FILEPATH, "w", newline="", encoding="utf-8") as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(["TargetAttr", "TargetWeight", "RankReversed", "NewWinner", "Spread"])
-        sweep_attribute_weights(writer, attributes_norm)
 
-    logger.warning(f"🎉 Sensitivity analysis complete. Results saved to: {SENS_DIR}\n")
+
+
+"""
+def run_sensitivity_analysis(step_size=TARGET_STEP_SIZE, pipeline=False):
+    logger.warning(f"⏳ Starting Criteria Sensitivity Analysis (Step Size: {TARGET_STEP_SIZE})")
+    load_data(pipeline)
+    with open(SENS_FILEPATH, "w", newline="", encoding="utf-8") as csvfile:
+        sweep_attribute_weights(init_writer(csvfile), attributes_norm)
+
+    logger.warning("🎉 Sensitivity Analysis completed successfully.")
+    logger.warning(f"📁 See results in {SENS_DIR}\n")
 
 def sweep_attribute_weights(writer, attributes_norm):
-    test_weights = np.arange(0.0, 1.0 + TARGET_STEP_SIZE, TARGET_STEP_SIZE)
+    # For each attribute, get it's starting weights
     for target_idx, target_attr in enumerate(ATTRIBUTES_LIST):
-        logger.info(f"\n⚖️  Sweeping weights for attribute: {target_attr} ({target_idx})")
+        logger.info(f"\tTesting the sensitivity of {target_attr}...")
         weights = get_attr_start_weights(target_idx)
         attr_winners = []
+        attr_scores = []
+        # Find scores & winner, increment weights by step size
         while weights[target_idx] < 1 + TARGET_STEP_SIZE:
-            this_winner, score_spread = calculate_scores(writer, attributes_norm, weights)
-            rank_reversal = "YES" if this_winner != baseline_winner else "NO"
+            scores = calculate_scores(writer, attributes_norm, weights)
+            score_spread, this_winner, rank_reversal = analyze_scores(scores)
+            attr_scores.append(scores)
             attr_winners.append(this_winner)
             writer.writerow([target_attr, round(weights[target_idx], 4), rank_reversal, this_winner, round(score_spread, 4)])
             weights = increment_weights(weights, target_idx)
-        plot_stability(target_attr, test_weights, attr_winners, SENS_DIR)
+        plot_stability(target_attr, attr_scores, SENS_DIR)
 
 
 """
@@ -61,100 +68,105 @@ def increment_weights(weights, target_idx):
         else:
             non_target_weight = weights[i] - NON_TARGET_STEP_SIZE
             weights[i] = max(non_target_weight, 0)
-
     # Skip print for last iteration
     if weights[target_idx] < 1.05:
         w_sum = round(weights.sum(),4)
         logger.debug(f"   Incremented weights: {weights}, sum = {w_sum}")
-    return weights
+    return np.round(weights, 10)
 
 def calculate_scores(writer, attributes_norm, attr_weights):
     if not np.isclose(attr_weights.sum(), 1.0):
-        raise ValueError("Something is wrong with the weights vector.")
+        raise ValueError(f"Something is wrong with the weights vector: {attr_weights} sum={attr_weights.sum()}")
     scores = proc.compute_weighted_scores(attributes_norm, attr_weights)
+    return scores
+
+def analyze_scores(scores):
     sorted_indices = np.argsort(scores)[::-1]
     score_spread = float(scores[sorted_indices[0]] - scores[sorted_indices[-1]])
     this_winner = scenario_names[sorted_indices[0]]
-    return this_winner, score_spread
+    rank_reversal = "YES" if this_winner != baseline_winner else "NO"
+    return score_spread, this_winner, rank_reversal
 
-
-"""
-Plots
-"""
-def plot_stability(attr_name, weights, winners, save_path):
-    logger.info(f"...Plotting stability for {attr_name}")
-    plt.figure(figsize=(10, 2))
-    unique_winners, winner_colors = get_unique_winner_colors(winners);
-    plot_winners(weights, winners, winner_colors)
+def plot_stability(attr_name, all_scores, save_path):
+    scores_matrix = np.array(all_scores) # Shape: (Num_Steps, Num_Scenarios)
+    plot_lines(scores_matrix)
     plot_labels(attr_name)
-    plot_legend(unique_winners, winner_colors, attr_name, save_path)
+    utils.save_png(f"sensitivity_{attr_name}", SENS_DIR)
+    plt.close()
 
-def get_unique_winner_colors(winners):
-    # Map unique winners to specific tracking colors
-    unique_winners = list(set(winners))
-    color_map = plt.get_cmap('Set3', len(unique_winners))
-    winner_colors = {winner: color_map(i) for i, winner in enumerate(unique_winners)}
-    return unique_winners, winner_colors
-
-def plot_winners(weights, winners, winner_colors):
-    for idx, (w, winner) in enumerate(zip(weights, winners)):
-        edgecolor = 'black' if winner != baseline_winner else 'navy'
-        hatch = '//' if winner != baseline_winner else ''
-        plt.barh(y=0, width=0.05, left=w-0.025, color=winner_colors[winner],
-                 edgecolor=edgecolor, hatch=hatch, height=0.4)
+def plot_lines(scores_matrix):
+    test_weights = np.arange(0.0, 1.0 + TARGET_STEP_SIZE, TARGET_STEP_SIZE)
+    plt.figure(figsize=(10, 6))
+    for idx, scenario in enumerate(scenario_names):
+        scenario_scores = scores_matrix[:, idx]
+        # Highlight the baseline winner with a distinct line style or thickness
+        linewidth = 2.5 if scenario == baseline_winner else 1.5
+        linestyle = '-' if scenario == baseline_winner else '--'
+        plt.plot(test_weights, scenario_scores, label=os.path.basename(scenario), linewidth=linewidth, linestyle=linestyle)
 
 def plot_labels(attr_name):
-    plt.title(f"Stability Map: Swapping Weights for {attr_name}", fontsize=11, fontweight='bold')
-    plt.xlabel("Assigned Attribute Weight")
-    plt.xlim(-TARGET_STEP_SIZE, 1 + TARGET_STEP_SIZE)
-    plt.yticks([])
-
-def plot_legend(unique_winners, winner_colors, attr_name, save_path):
-    legend_elements = [Patch(facecolor=winner_colors[w], edgecolor='black', label=f"Winner: {os.path.basename(w)}") for w in unique_winners]
-    plt.legend(handles=legend_elements, loc='upper left', bbox_to_anchor=(1.0, 1.0))
+    plt.title(f"Sensitivity Profile: Sensitivity to '{attr_name}' Weight", fontsize=12, fontweight='bold')
+    plt.xlabel(f"Assigned Weight for {attr_name} (0.0 to 1.0)", fontweight='bold')
+    plt.ylabel("Final Weighted SAW Score", fontweight='bold')
+    plt.xlim(0.0, 1.0)
+    plt.ylim(-1.0, 1.0)
+    plt.grid(True, linestyle=':', alpha=0.6)
+    plt.legend(loc='upper left', bbox_to_anchor=(1.02, 1.0), title="Scenarios")
     plt.tight_layout()
-    plt.savefig(f"{save_path}/stability_{attr_name}.png", bbox_inches='tight')
-    plt.close()
+
+def save_plot_png(file_name, save_path):
+    png_file = f"{file_name}.png"
+    plt.savefig(f"{PNG_DIR}/{png_file}", bbox_inches='tight')
+    logger.info(f"\t✔️  Chart successfully saved to {png_file}")
 
 
 """
 Initialize sensitivity analysis
 """
-def init_sensitivity():
-    init_logger()
-    init_dirs()
-    init_extract()
-    proc.init_process()
-    load_data()
-    init_baseline_winner()
-    init_base_weights()
+def init_sensitivity(args, pipeline=False):
+    init_logger(args)
+    if not pipeline:
+        utils.create_dirs(png=False, processed=False, sens=True)
 
-def init_logger():
+def init_logger(args):
     global logger
     logger = utils.get_logger()
     if logger is None:
-        logger = utils.init_logging(LOG_FILE, verbose=True)
+        logger = utils.init_logging(LOG_FILE, verbose=args.verbose, debug=args.debug, quiet=args.quiet)
         utils.set_logger(logger)
     logger.debug("Logger initiatied")
 
-def init_dirs():
-    utils.create_dirs(png=False, processed=False, sens=True)
+def load_data(pipeline):
+    load_attr_data(pipeline)
+    set_baseline_winner()
+    set_base_weights()
 
-def load_data():
+def load_attr_data(pipeline):
     global scenario_names, attributes_raw, attributes_norm
-    scenario_names, attributes_raw = extract_all_data(PROJ_DIR)
+    if (pipeline): # If run from the pipeline, values should be saved in the config
+        scenario_names = utils.get_scenario_names()
+        attributes_raw = utils.get_raw_attributes()
+    else:
+        init_for_extract()
+        scenario_names, attributes_raw = extract_all_data(PROJ_DIR)
     attributes_norm = proc.normalize_attributes(attributes_raw)
 
-def init_baseline_winner():
+def init_for_extract():
+    utils.create_dirs(sens=True, processed=False, png=False)
+    utils.setup_totals_file()
+    init_extract()
+    proc.init_process()
+
+def set_baseline_winner():
     global baseline_winner
     logger.info("...Computing baseline scores using even weights")
     baseline_scores = proc.compute_weighted_scores(attributes_norm, FLAT_WEIGHTS)
     baseline_ranking = [scenario_names[idx] for idx in np.argsort(baseline_scores)[::-1]]
     logger.info(f"\t✔️  Computed baseline ranking: {baseline_ranking}")
     baseline_winner = baseline_ranking[0]
-    logger.info(f"Baseline Winner: {baseline_winner}")
+    logger.info(f"\t✔️  Baseline Winner: {baseline_winner}")
 
-def init_base_weights():
+def set_base_weights():
     num_attributes = len(ATTRIBUTES_LIST)
     step_size = TARGET_STEP_SIZE
     non_target_count = num_attributes - 1
@@ -166,6 +178,10 @@ def init_base_weights():
     # Target attribute still needs to be set to 0
     logger.debug(f"Base Weights: {base_weights}")
 
+def init_writer(csvfile):
+    writer = csv.writer(csvfile)
+    writer.writerow(["TargetAttr", "TargetWeight", "RankReversed", "NewWinner", "Spread"])
+    return writer
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run independent criteria sensitivity analysis sweeps.")
@@ -173,9 +189,9 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--verbose", action="store_true", help=HELP_VERBOSE)
     parser.add_argument("-d", "--debug", action="store_true", help=HELP_DEBUG)
     parser.add_argument("-q", "--quiet", action="store_true", help=HELP_QUIET)
-
-    init_sensitivity()
     args = parser.parse_args()
+
+    init_sensitivity(args, pipeline=False)
     logger.debug(f"\nArgs: {args}\n")
 
     run_sensitivity_analysis(step_size=args.step)

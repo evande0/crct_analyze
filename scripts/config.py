@@ -10,13 +10,13 @@ from pathlib import Path
 '''
 
 '''
-# Folder containing CRCT project JSON files
+Folder containing CRCT project JSON files
 '''
 PROJ_DIR = "/Users/evandeo/Documents/PEPM/research_project/project_files"
 PARENT_DIR = Path(PROJ_DIR).parent # Folder for results will be created here
 
 '''
-# Directories for saved results
+Directories for saved results
 '''
 TIMESTAMP = datetime.now().strftime('%Y-%m-%d_%H%M%S')
 SAVE_DIR = f"{PARENT_DIR}/analysis/{TIMESTAMP}"
@@ -25,11 +25,11 @@ PROCESSED_DIR = f"{SAVE_DIR}/processed"
 PNG_DIR = f"{SAVE_DIR}/png_results"
 SENS_DIR = f"{SAVE_DIR}/sensitivity"
 SENS_FILEPATH = f"{SENS_DIR}/sensitivity_summary.csv"
-TOTALS_FILENAME = f"scenario_totals.csv"
-TOTALS_FILEPATH = f"{PARENT_DIR}/data/{TOTALS_FILENAME}"
+TOTALS_FILENAME = f"scenario_totals_{TIMESTAMP}.csv"
+TOTALS_FILEPATH = f"{RAW_DIR}/{TOTALS_FILENAME}"
 
 '''
-# Logger
+Logger
 '''
 LOG_DIR = f"{PARENT_DIR}/logs"
 LOGGER_NAME = "DataPipeline"
@@ -108,15 +108,6 @@ SENSITIVITY_START_WEIGHTS = np.array([
     Edits below could break the pipeline.
 ------------------------------------------
 '''
-
-'''
-Variables saved for use in other pipeline stages
-'''
-logger = None
-scenarios = None
-attributes_norm = None
-totals = None
-
 '''
 # Field mapping for project JSON files
 '''

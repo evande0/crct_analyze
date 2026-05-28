@@ -16,8 +16,7 @@ Loads extracted data, inverts cost criteria, and applies L2 normalization
 def process_data(use_config=False):
     scenarios, raw_values = load_raw_values(use_config)
     if (not is_load_successful(scenarios, raw_values)):
-        logger.warning("Expected data to be saved before processing data. Extracting data now...")
-        extract_all_data(PROJ_DIR)
+        raise RuntimeException("Expected data to be saved before processing data. Rerun with -x")
     validate_attributes_matrix(raw_values)
 
     # Normalize attributes
@@ -28,7 +27,7 @@ def process_data(use_config=False):
     logger.info(f"Using weights: {WEIGHTS}")
 
     # Compute weighted attributes
-    weighted_attributes = np.round(attributes_norm * config.WEIGHTS, 7)
+    weighted_attributes = np.round(attributes_norm * config.WEIGHTS, 10)
     np.savetxt(f"{PROCESSED_DIR}/weighted_attributes.csv", weighted_attributes, delimiter=',', fmt='%10.5f')
     set_weighted_attributes(weighted_attributes)
 
@@ -69,7 +68,7 @@ def l2_norm(A):
     logger.debug("⏳Performing L2 column normalization")
     norms = np.linalg.norm(A, axis=0)
     norms[norms == 0] = 1.0     # Avoid dividing by 0 in all 0 column
-    A_norm = np.round(A / norms, 7)
+    A_norm = np.round(A / norms, 10)
     return A_norm
 
 """
@@ -83,7 +82,7 @@ def max_abs_norm(data):
     col_max_abs[col_max_abs == 0] = 1.0
 
     # Divide each element in a column by that column's max absolute value
-    normalized_data = np.round(data / col_max_abs, 7)
+    normalized_data = np.round(data / col_max_abs, 10)
     return normalized_data
 
 def init_process():
@@ -106,7 +105,7 @@ def invert_costs(matrix):
 
 def compute_weighted_scores(A_norm, weights):
     try:
-        return np.round(A_norm @ weights,10)
+        return np.round(A_norm @ weights, 10)
     except Exception as e:
         logger.error(f"....ERROR computing weighted scores: {e}")
         return None

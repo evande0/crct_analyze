@@ -3,6 +3,7 @@ import csv
 import glob
 import json
 import logging
+import matplotlib.pyplot as plt
 import numpy as np
 import os
 import shutil
@@ -153,6 +154,7 @@ def set_weighted_attributes(new_weight_attr):
 def get_weighted_attributes():
     return config.weighted_attributes
 
+
 """-------------------------
     Directory init
 -------------------------"""
@@ -191,7 +193,7 @@ def setup_totals_file():
 
 
 """-------------------------
-    JSON & CSV utils
+    File utils (json, csv, png)
 -------------------------"""
 # Throws JSONDecodeError if unsuccessful
 def load_json(file_path):
@@ -299,6 +301,10 @@ def is_load_successful(names, raw_values):
     return True
 
 
+def save_png(file_name, save_dir):
+    png_file = f"{file_name}.png"
+    plt.savefig(f"{save_dir}/{png_file}", bbox_inches='tight')
+    config.logger.info(f"\t✔️  Chart successfully saved to {png_file}")
 
 """-------------------------
     Validation utils
