@@ -6,11 +6,11 @@ from utils import *
 from extract_data import *
 from process_data import *
 from analyze_data import *
-from sensitivity import run_sensitivity_analysis
+from sensitivity import init_sensitivity, run_sensitivity_analysis
 
 '''
-TODO
-- Rotating console log
+Assumptions
+- No more than 9 scenarios total (sorting is alpha, not based on the number suffix)
 -
 '''
 
@@ -21,14 +21,9 @@ TODO
 def run_full_pipeline(args, logger):
     logger.warning("\n⏳ Begin running data pipeline")
     try:
-        extract_all_data(args.folder)
-        logger.warning(f"✅ Data extraction complete.")
-
-        process_data()
-        logger.warning(f"✅ Processing complete.")
-
+        use_config = extract_data(force_extract=True)   # Loading from saved data is buggy
+        process_data(use_config)
         analyze_data(args.showradar)
-        logger.warning(f"✅ Analysis complete.")
 
         logger.warning("🎉 Data pipeline completed successfully.")
         logger.warning(f"📁 See data and analysis in {SAVE_DIR}\n")
@@ -37,24 +32,35 @@ def run_full_pipeline(args, logger):
     except Exception as e:
         log_failure(e, logger)
     finally:
+        if (args.sensitivity):
+            run_sensitivity_analysis(pipeline=True)
         # Warn user if running out of log file space
         check_log_rotation_limits(LOG_FILE)
 
+def extract_data(force_extract):
+    if (not has_totals_csv() or force_extract):
+        extract_all_data(args.folder)
+        return True
+    else:
+        logger.warning("Skipping data extraction. Using saved data instead.")
+        return False
 
 
 def log_failure(e, logger):
-        logger.critical(f"\nExiting data pipeline due to error: {e}")
-        logger.info(f"{e}", exc_info=True)
+        logger.critical(f"\nExiting data pipeline due to error:")
+        logger.critical(f"{e}", exc_info=True)
         logger.critical(f"\n❌ Data pipeline failed ❌")
         logger.critical(f"\nSee logs saved to {LOG_FILE}\n")
 
-def init_pipeline(logger):
+def init_pipeline(args, logger, sens):
     logger.debug("Initializing pipeline")
-    create_dirs()
-    setup_totals_file()
+    create_dirs(sens)
     init_extract()
     init_process()
     init_analyze()
+    set_weights(args.weights)
+    if sens:
+        init_sensitivity(args, pipeline=True)
 
 '''
     Run the pipeline by calling 'python3 run_pipeline.py'
@@ -66,6 +72,9 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--verbose", action="store_true", help=HELP_VERBOSE)
     parser.add_argument("-d", "--debug", action="store_true", help=HELP_DEBUG)
     parser.add_argument("-q", "--quiet", action="store_true", help=HELP_QUIET)
+#     parser.add_argument("-x","--extract", action="store_true", help=HELP_EXTRACT)
+    parser.add_argument("-n","--sensitivity", action="store_true", help=HELP_SENSITIVITY)
+    parser.add_argument("-w","--weights", default="DEFAULT", help=HELP_WEIGHTS)
     args = parser.parse_args()
 
     logger = init_logging(LOG_FILE, args.verbose, args.debug, args.quiet)
@@ -73,7 +82,7 @@ if __name__ == "__main__":
     set_logger(logger)
     logger.debug(f"\nArgs: {args}\n")
 
-    init_pipeline(logger)
+    init_pipeline(args, logger, args.sensitivity)
     run_full_pipeline(args, logger)
 
     for handler in logger.handlers[:]:

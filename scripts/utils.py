@@ -3,8 +3,10 @@ import csv
 import glob
 import json
 import logging
+import matplotlib.pyplot as plt
 import numpy as np
 import os
+import re
 import shutil
 import sys
 
@@ -90,12 +92,11 @@ def check_log_rotation_limits(log_file):
     # Filter to ensure we only count the extensions that are digits
     rotation_count = sum(1 for f in existing_backups if f.split('.')[-1].isdigit())
 
-    remaining_slots = config.LOG_MAX_BACKUPS - rotation_count
 
 
-    if remaining_slots <= 0:
+    if rotation_count >= config.LOG_MAX_BACKUPS:
         config.logger.warn(f"\nWARNING: Max log files reached. Oldest log files are being overwritten at:\n{log_dir}")
-    elif remaining_slots <= config.LOG_MAX_WARN_THRESHOLD:
+    elif rotation_count >= config.LOG_MAX_WARN_THRESHOLD:
         config.logger.warn(f"\nWARNING: Current backup file count: {rotation_count} / {max_backups}")
         config.logger.warn(f"After reaching {config.LOG_MAX_BACKUPS} the oldest logs will be permanently overwritten.")
         config.logger.warn(f"If you wish to preserve your older log files, please back them up:\n{log_dir}")
@@ -112,26 +113,29 @@ def check_log_rotation_limits(log_file):
 ----------------------------------"""
 
 """ Raw data from project files """
-def set_raw_data(new_totals):
-    all_totals = []
-    scenarios = []
-    for scenario in new_totals:
-        scenarios.append(scenario["Name"])
-        totals = []
-        for attr in config.ATTRIBUTES_LIST:
-            totals.append(scenario[attr])
-        all_totals.append(totals)
-    config.scenarios = scenarios
-    config.totals = all_totals
-    config.logger.debug(f"\t✔️  Set raw totals: {config.totals}")
-    config.logger.debug(f"\t✔️  Set scenario names: {config.scenarios}")
+def set_raw_files_data(data):
+    config.raw_files_data = data
 
+def get_raw_files_data():
+    return config.raw_files_data
 
-def get_scenarios():
-    return config.scenarios
+def set_scenario_names(names):
+    clean_names = [
+        f"Scenario {match.group(1)}: {match.group(2).replace('-', ' ').title()}".replace("Gi", "GI")
+        for name in names
+        if (match := re.match(r"scenario(\d+)_(.+)\.json", name))
+    ]
 
-def get_totals():
-    return config.totals
+    config.scenario_names = clean_names
+
+def get_scenario_names():
+    return config.scenario_names
+
+def set_raw_attributes(raw_values):
+    config.raw_attr_values = np.array(raw_values, dtype=float)
+
+def get_raw_attributes():
+    return config.raw_attr_values
 
 """ Normalized data """
 def set_attributes_norm(new_attributes_norm):
@@ -157,24 +161,43 @@ def set_weighted_attributes(new_weight_attr):
 def get_weighted_attributes():
     return config.weighted_attributes
 
+""" Weights """
+def set_weights(weights_name):
+    weights_idx = config.WeightsIndex[weights_name].value
+    config.WEIGHTS = config.WEIGHTS_OPTS[weights_idx]
+    config.logger.debug(f"\t✔️  Set WEIGHTS: {config.WEIGHTS}")
+
+def get_weights():
+    return config.WEIGHTS
+
 """-------------------------
     Directory init
 -------------------------"""
-def create_dirs():
-    os.makedirs(config.PROJ_DIR, exist_ok=True)
-    os.makedirs(config.SAVE_DIR, exist_ok=True)
-    os.makedirs(config.LOG_DIR, exist_ok=True)
-    os.makedirs(config.RAW_DIR, exist_ok=True)
-    os.makedirs(config.PROCESSED_DIR, exist_ok=True)
-    os.makedirs(config.PNG_DIR, exist_ok=True)
+def create_dirs(sens=False,proj=True, save=True, log=True, raw=True, processed=True, png=True):
+    config.logger.debug("Creating directories for pipeline artifacts...")
 
-    config.logger.debug("Created directories for pipeline artifacts")
-    config.logger.debug(f"\t✔️  Project directory: {config.PROJ_DIR}")
-    config.logger.debug(f"\t✔️  Save directory: {config.SAVE_DIR}")
-    config.logger.debug(f"\t✔️  Log files: {config.LOG_DIR}")
-    config.logger.debug(f"\t✔️  Raw data: {config.RAW_DIR}")
-    config.logger.debug(f"\t✔️  Processed data:{config.PROCESSED_DIR}")
-    config.logger.debug(f"\t✔️  PNG images: {config.PNG_DIR}")
+    if proj:
+        os.makedirs(config.PROJ_DIR, exist_ok=True)
+        config.logger.debug(f"\t✔️  Project directory: {config.PROJ_DIR}")
+    if save:
+        os.makedirs(config.SAVE_DIR, exist_ok=True)
+        config.logger.debug(f"\t✔️  Save directory: {config.SAVE_DIR}")
+    if log:
+        os.makedirs(config.LOG_DIR, exist_ok=True)
+        config.logger.debug(f"\t✔️  Log files: {config.LOG_DIR}")
+    if raw:
+        os.makedirs(config.RAW_DIR, exist_ok=True)
+        config.logger.debug(f"\t✔️  Raw data: {config.RAW_DIR}")
+    if processed:
+        os.makedirs(config.PROCESSED_DIR, exist_ok=True)
+        config.logger.debug(f"\t✔️  Processed data:{config.PROCESSED_DIR}")
+    if png:
+        os.makedirs(config.PNG_DIR, exist_ok=True)
+        config.logger.debug("Created directories for pipeline artifacts")
+    if sens:
+        os.makedirs(config.SENS_DIR, exist_ok=True)
+        config.logger.debug(f"\t✔️  Sensitivity: {config.SENS_DIR}")
+
 
 
 def setup_totals_file():
@@ -183,8 +206,9 @@ def setup_totals_file():
         writer.writeheader()
     config.logger.debug(f"\t✔️  Created CSV for totals: {config.TOTALS_FILEPATH}")
 
+
 """-------------------------
-    JSON & CSV utils
+    File utils (json, csv, png)
 -------------------------"""
 # Throws JSONDecodeError if unsuccessful
 def load_json(file_path):
@@ -210,24 +234,6 @@ def write_to_csv(filepath, data):
         writer.writeheader()
         writer.writerows(data)
     config.logger.info(f"\t✔️  Saved raw data to {os.path.basename(filepath)}")
-
-def load_totals_csv(filepath):
-    config.logger.debug(f"\tLoading totals CSV")
-    scenarios = []
-    matrix = []
-
-    with open(filepath, "r", encoding="utf-8") as file:
-        reader = csv.DictReader(file)
-        for row in reader:
-            scenarios.append(row.get("Name", ""))
-            values = []
-            for attr in config.ATTRIBUTES_LIST:
-                value = float(row.get(attr, 0.0))
-                values.append(value)
-            matrix.append(values)
-    A = np.array(matrix, dtype=float)
-    config.logger.debug(f"\t✔️  Loaded attributes matrix with shape {A.shape}")
-    return scenarios, A
 
 def sort_csv(filepath, sort_col, has_headers):
     config.logger.debug(f"Sorting CSV file {filepath} by column {sort_col}")
@@ -256,7 +262,64 @@ def write_scores_to_csv(filepath, scenario_scores):
             writer.writerow([scenario, round(float(score), 4)])
     config.logger.debug(f"\t✔️  Weighted scores written to:\n\t{output_filepath}")
 
+"""Load totals from config file or CSV. Returns None if no data is saved"""
+def load_raw_values(use_config=False):
+    names = None
+    raw_values = None
+    if (use_config):
+        names, raw_values = load_config_totals()
+    if (not is_load_successful(names, raw_values)):
+        names, raw_values = load_csv_totals()
+    return names, raw_values
 
+
+"""Load totals from config file. Assumes extract_data ran before process_data in pipeline"""
+def load_config_totals():
+    config.logger.debug("...Loading raw values from config")
+    names = get_scenario_names()
+    raw_values = get_raw_attributes()
+    return names, raw_values
+
+
+def load_csv_totals():
+    filepath = config.TOTALS_FILEPATH
+    if (not has_totals_csv()):
+        raise RuntimeException("Expected {filepath}, but it doesn't exist")
+    config.logger.debug(f"\tLoading totals CSV from {filepath}")
+    names = []
+    matrix = []
+
+    with open(filepath, "r", encoding="utf-8") as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            names.append(row.get("Name", ""))
+            values = []
+            for attr in config.ATTRIBUTES_LIST:
+                value = float(row.get(attr, 0.0))
+                values.append(value)
+            matrix.append(values)
+
+    attributes = np.array(matrix, dtype=float)
+    config.logger.debug(f"\t✔️  Loaded attributes matrix with shape {attributes.shape}")
+    # Save values to config
+    set_scenario_names(names)
+    set_raw_attributes(attributes)
+
+    return names, attributes
+
+
+def is_load_successful(names, raw_values):
+    if names is None or raw_values is None:
+        config.logger.info(f"❓Failed to load raw data")
+        return False
+    config.logger.info(f"\t✔️  Successfully loaded raw data")
+    return True
+
+
+def save_png(file_name, save_dir):
+    png_file = f"{file_name}.png"
+    plt.savefig(f"{save_dir}/{png_file}", bbox_inches='tight')
+    config.logger.info(f"\t✔️  Chart successfully saved to {png_file}")
 
 """-------------------------
     Validation utils
@@ -264,12 +327,21 @@ def write_scores_to_csv(filepath, scenario_scores):
 
 def validate_filepath(filepath, expected_type):
     if not filepath.lower().endswith(expected_type):
-        config.logger.error(f"...ERROR: Specified filepath is not a CSV.")
-        raise TypeError("Specified filepath is not a CSV.")
+        config.logger.error(f"...ERROR: Specified filepath is not a {expected_type}.")
+        raise TypeError("Specified filepath is not a {expected_type}.")
     if not os.path.exists(filepath):
         config.logger.error(f"....ERROR: File '{filepath}' does not exist.")
         raise ValueError("File '{filepath}' does not exist.")
     return True
+
+def has_totals_csv():
+    config.logger.debug("Checking if totals CSV is available")
+    try:
+        return validate_filepath(config.TOTALS_FILEPATH, "csv")
+    except ValueError as e:
+        config.logger.debug("No saved data available")
+        return False
+
 
 def validate_crct_json(json):
     if "areas" not in json or not isinstance(json["areas"], list):
@@ -296,12 +368,15 @@ def validate_weights():
 
 def validate_attributes_matrix(A):
     if A is None or len(A) == 0:
-        logger.error("...ERROR: Attributes matrix is empty")
+        config.logger.error("...ERROR: Attributes matrix is empty")
         raise ValueError("Attributes matrix is empty")
-    num_cols = A.shape[1]
+    shape = A.shape
     num_attr = len(config.ATTRIBUTES_LIST)
-    if num_cols != num_attr:
-        logger.error("...ERROR: Attributes matrix has {num_cols} but expected {num_attr}")
+    num_scenarios = len(get_scenario_names())
+    if shape[0] != num_scenarios:
+        config.logger.error("...ERROR: Attributes matrix has {shape[0]} but expected {num_scenarios}")
         raise ValueError("Attributes matrix does not have the expected dimensions.")
-        return False
+    if shape[1] != num_attr:
+        config.logger.error("...ERROR: Attributes matrix has {num_cols} but expected {num_attr}")
+        raise ValueError("Attributes matrix does not have the expected dimensions.")
     return True
