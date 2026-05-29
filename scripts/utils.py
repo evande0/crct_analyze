@@ -6,6 +6,7 @@ import logging
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import re
 import shutil
 import sys
 
@@ -119,7 +120,13 @@ def get_raw_files_data():
     return config.raw_files_data
 
 def set_scenario_names(names):
-    config.scenario_names = names
+    clean_names = [
+        f"Scenario {match.group(1)}: {match.group(2).replace('-', ' ').title()}".replace("Gi", "GI")
+        for name in names
+        if (match := re.match(r"scenario(\d+)_(.+)\.json", name))
+    ]
+
+    config.scenario_names = clean_names
 
 def get_scenario_names():
     return config.scenario_names
@@ -154,6 +161,14 @@ def set_weighted_attributes(new_weight_attr):
 def get_weighted_attributes():
     return config.weighted_attributes
 
+""" Weights """
+def set_weights(weights_name):
+    weights_idx = config.WeightsIndex[weights_name].value
+    config.WEIGHTS = config.WEIGHTS_OPTS[weights_idx]
+    config.logger.debug(f"\t✔️  Set WEIGHTS: {config.WEIGHTS}")
+
+def get_weights():
+    return config.WEIGHTS
 
 """-------------------------
     Directory init

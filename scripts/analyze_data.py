@@ -53,6 +53,7 @@ def plot_scores(scenario_scores):
 
 
 def plot_score_labels():
+    plt.figure(figsize=(10, 6))
     plt.ylim(-1.0, 1.0)
     plt.xlabel('Scenario', fontweight='bold')
     plt.ylabel('Weighted Score', fontweight='bold')
@@ -61,7 +62,6 @@ def plot_score_labels():
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
 def plot_score_bars(scenarios, scores):
-    plt.figure(figsize=(10, 6))
     bars = plt.bar(scenarios, scores, color='skyblue', edgecolor='navy')
     for bar in bars:
         yval = bar.get_height()
@@ -80,6 +80,7 @@ def plot_weights(attributes, weights):
         logger.error(f"Failed to generate plot: {e}", exc_info=True)
 
 def plot_weight_labels(ylim):
+    plt.figure(figsize=(10, 6))
     plt.xlabel('Attribute', fontweight='bold')
     plt.ylabel('Weight', fontweight='bold')
     plt.ylim(0, ylim)
@@ -94,6 +95,17 @@ def plot_weight_bars(attributes, weights):
         plt.text(bar.get_x() + bar.get_width()/2, yval, round(yval, 4), va='bottom', ha='center', fontsize=9)
     plt.tight_layout() # Prevents label cutoff
 
+def plot_weight_bars(attributes, weights):
+    bars = plt.bar(attributes, weights, color='skyblue', edgecolor='navy')
+    for bar in bars:
+        yval = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width()/2, yval, round(yval, 4), va='bottom', ha='center', fontsize=9)
+    plt.tight_layout() # Prevents label cutoff
+
+
+"""
+Radar Charts
+"""
 
 """
 Radar Charts
@@ -112,8 +124,7 @@ def plot_radar_charts(scenarios, A, attributes, showradar):
     fig_title = "Scenario Performance Comparison"
     for i in range(m):
         plot_values(ax, scenarios[i], A[i].tolist(), angles)
-
-    plot_radar(ax, attributes, fig_title, angles, showradar)
+    plot_labels(ax, attributes, fig_title, angles, showradar)
 
     # Scenario + Control charts
     for i in range(m):
@@ -121,7 +132,7 @@ def plot_radar_charts(scenarios, A, attributes, showradar):
         fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
         plot_values(ax, scenarios[0], A[0].tolist(), angles)
         plot_values(ax, scenarios[i], A[i].tolist(), angles)
-        plot_radar(ax, attributes, fig_title, angles, showradar)
+        plot_labels(ax, attributes, fig_title, angles, showradar)
 
     logger.debug("\t✔️  Finished generating radar charts")
 
@@ -130,8 +141,8 @@ def plot_values(ax, label, values, angles):
     ax.plot(angles, values, linewidth=2, label=label)
     ax.fill(angles, values, alpha=0.2)
 
-def plot_radar(ax, labels, fig_title, angles, showradar):
-    ylim = np.round(max(WEIGHTS),3)
+def plot_labels(ax, labels, fig_title, angles, showradar):
+    ylim = np.round(max(config.WEIGHTS),3)
     ax.set_xticks(angles[:-1])
     ax.set_xticklabels(labels, fontsize=9)
     ax.set_yticks([-ylim, -ylim/2.0, 0.0, ylim/2.0, ylim])

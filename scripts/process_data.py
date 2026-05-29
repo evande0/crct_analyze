@@ -24,7 +24,7 @@ def process_data(use_config=False):
 
     # Validate weights vector
     validate_weights();
-    logger.info(f"Using weights: {WEIGHTS}")
+    logger.info(f"Using weights: {config.WEIGHTS}")
 
     # Compute weighted attributes
     weighted_attributes = np.round(attributes_norm * config.WEIGHTS, 10)
@@ -33,7 +33,7 @@ def process_data(use_config=False):
 
     # Compute scores
     logger.debug("⏳Computing weighted scores")
-    scores = compute_weighted_scores(attributes_norm, WEIGHTS)
+    scores = compute_weighted_scores(attributes_norm, config.WEIGHTS)
     if scores is None:
         logger.error("❗Failed to compute scores. Aborting score computation.\n")
         return
@@ -129,6 +129,6 @@ def sort_scores(scenario_scores):
 def print_scenario_scores(scenario_scores):
     logger.info("\n📊Weighted Scores:")
     for scenario, score in scenario_scores:
-        logger.info(f"...{os.path.basename(scenario)}: {round(float(score), 6)}")
-    logger.info("\nWeighted scores are between -1 and 1. "
+        logger.info(f"{round(float(score), 4)}\t{os.path.basename(scenario)}: ")
+    logger.info("Weighted scores are between -1 and 1. "
           "A score of 0 means no change from current conditions.")
