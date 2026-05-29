@@ -56,6 +56,7 @@ def init_pipeline(args, logger, sens):
     init_extract()
     init_process()
     init_analyze()
+    set_weights(args.weights)
     if sens:
         init_sensitivity(args, pipeline=True)
 
@@ -71,6 +72,7 @@ if __name__ == "__main__":
     parser.add_argument("-q", "--quiet", action="store_true", help=HELP_QUIET)
 #     parser.add_argument("-x","--extract", action="store_true", help=HELP_EXTRACT)
     parser.add_argument("-n","--sensitivity", action="store_true", help=HELP_SENSITIVITY)
+    parser.add_argument("-w","--weights", default="DEFAULT", help=HELP_WEIGHTS)
     args = parser.parse_args()
 
     logger = init_logging(LOG_FILE, args.verbose, args.debug, args.quiet)

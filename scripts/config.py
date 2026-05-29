@@ -1,7 +1,7 @@
 import numpy as np
 from datetime import datetime
 from pathlib import Path
-
+from enum import Enum
 
 '''
 ------------------------------------------
@@ -59,23 +59,23 @@ SORT_TYPE = 0
 '''
 Weights - Edit me to reflect criteria priorities
 '''
-WEIGHTS = np.array([
-    .2,     # ConstructionCost
-    .2,     # MaintenanceCost
-    .05,     # TempReduction
-    .05,     # NutrientReduction
-    .05,     # PathogenReduction
-    .05,     # AdsorbingPollutants
-    .1,      # GroundwaterRecharge
-    .1,      # Evapotranspiration
-    .2       # StorageCapacity
+DEFAULT = np.array([
+    0.20,     # ConstructionCost
+    0.20,     # MaintenanceCost
+    0.05,     # TempReduction
+    0.05,     # NutrientReduction
+    0.05,     # PathogenReduction
+    0.05,     # AdsorbingPollutants
+    0.10,      # GroundwaterRecharge
+    0.10,      # Evapotranspiration
+    0.20       # StorageCapacity
     ])
 
 
 '''
 Flat weights (.111111)
 '''
-FLAT_WEIGHTS = np.array([
+FLAT = np.array([
     .111111,     # ConstructionCost
     .111111,     # MaintenanceCost
     .111111,     # TempReduction
@@ -88,19 +88,37 @@ FLAT_WEIGHTS = np.array([
     ])
 
 '''
-Sensitivity
+To use, run with: -w CUSTOM_WEIGHTS1
 '''
-SENSITIVITY_START_WEIGHTS = np.array([
-    0.0,     # ConstructionCost
-    0.125,     # MaintenanceCost
-    0.125,     # TempReduction
-    0.125,     # NutrientReduction
-    0.125,     # PathogenReduction
-    0.125,     # AdsorbingPollutants
-    0.125,      # GroundwaterRecharge
-    0.125,      # Evapotranspiration
-    0.125       # StorageCapacity
+CUSTOM1 = np.array([
+    .111111,     # ConstructionCost
+    .111111,     # MaintenanceCost
+    .111111,     # TempReduction
+    .111111,     # NutrientReduction
+    .111111,     # PathogenReduction
+    .111111,     # AdsorbingPollutants
+    .111111,      # GroundwaterRecharge
+    .111111,      # Evapotranspiration
+    .111111       # StorageCapacity
     ])
+
+'''
+To use, run with: -w CUSTOM_WEIGHTS2
+'''
+CUSTOM2 = np.array([
+    .111111,     # ConstructionCost
+    .111111,     # MaintenanceCost
+    .111111,     # TempReduction
+    .111111,     # NutrientReduction
+    .111111,     # PathogenReduction
+    .111111,     # AdsorbingPollutants
+    .111111,      # GroundwaterRecharge
+    .111111,      # Evapotranspiration
+    .111111       # StorageCapacity
+    ])
+
+WeightsIndex = Enum('Weights', [('DEFAULT', 0), ('FLAT', 1), ('CUSTOM1', 2), ('CUSTOM2', 3)])
+WEIGHTS_OPTS = [DEFAULT, FLAT, CUSTOM1, CUSTOM2]
 
 '''
 ------------------------------------------
@@ -162,5 +180,5 @@ HELP_VERBOSE = "Print INFO logs to console"
 HELP_DEBUG = "Print DEBUG logs to console"
 HELP_QUIET = "Suppress all but CRITICAL logs from printing to console"
 HELP_SHOWRADAR = "Display radar charts in addition to saving them as PNGs"
-
+HELP_WEIGHTS = "Specify the name of the weights to use (DEFAULT, FLAT, CUSTOM1, CUSTOM2). Example: -w CUSTOM1"
 

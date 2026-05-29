@@ -24,7 +24,7 @@ def process_data(use_config=False):
 
     # Validate weights vector
     validate_weights();
-    logger.info(f"Using weights: {WEIGHTS}")
+    logger.info(f"Using weights: {config.WEIGHTS}")
 
     # Compute weighted attributes
     weighted_attributes = np.round(attributes_norm * config.WEIGHTS, 10)
@@ -33,7 +33,7 @@ def process_data(use_config=False):
 
     # Compute scores
     logger.debug("⏳Computing weighted scores")
-    scores = compute_weighted_scores(attributes_norm, WEIGHTS)
+    scores = compute_weighted_scores(attributes_norm, config.WEIGHTS)
     if scores is None:
         logger.error("❗Failed to compute scores. Aborting score computation.\n")
         return

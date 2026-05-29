@@ -160,7 +160,7 @@ def init_for_extract():
 def set_baseline_winner():
     global baseline_winner
     logger.info("...Computing baseline scores using even weights")
-    baseline_scores = proc.compute_weighted_scores(attributes_norm, FLAT_WEIGHTS)
+    baseline_scores = proc.compute_weighted_scores(attributes_norm, FLAT)
     baseline_ranking = [scenario_names[idx] for idx in np.argsort(baseline_scores)[::-1]]
     logger.info(f"\t✔️  Computed baseline ranking: {baseline_ranking}")
     baseline_winner = baseline_ranking[0]
