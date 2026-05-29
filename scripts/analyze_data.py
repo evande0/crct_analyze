@@ -95,6 +95,17 @@ def plot_weight_bars(attributes, weights):
         plt.text(bar.get_x() + bar.get_width()/2, yval, round(yval, 4), va='bottom', ha='center', fontsize=9)
     plt.tight_layout() # Prevents label cutoff
 
+def plot_weight_bars(attributes, weights):
+    bars = plt.bar(attributes, weights, color='skyblue', edgecolor='navy')
+    for bar in bars:
+        yval = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width()/2, yval, round(yval, 4), va='bottom', ha='center', fontsize=9)
+    plt.tight_layout() # Prevents label cutoff
+
+
+"""
+Radar Charts
+"""
 
 """
 Radar Charts

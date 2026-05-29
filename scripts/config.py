@@ -182,3 +182,4 @@ HELP_QUIET = "Suppress all but CRITICAL logs from printing to console"
 HELP_SHOWRADAR = "Display radar charts in addition to saving them as PNGs"
 HELP_WEIGHTS = "Specify the name of the weights to use (DEFAULT, FLAT, CUSTOM1, CUSTOM2). Example: -w CUSTOM1"
 
+
