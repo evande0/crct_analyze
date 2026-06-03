@@ -62,13 +62,13 @@ Weights - Edit me to reflect criteria priorities
 DEFAULT = np.array([
     0.20,     # ConstructionCost
     0.20,     # MaintenanceCost
+    0.20,     # StorageCapacity
+    0.10,     # GroundwaterRecharge
+    0.10,     # Evapotranspiration
     0.05,     # TempReduction
     0.05,     # NutrientReduction
     0.05,     # PathogenReduction
-    0.05,     # AdsorbingPollutants
-    0.10,      # GroundwaterRecharge
-    0.10,      # Evapotranspiration
-    0.20       # StorageCapacity
+    0.05      # AdsorbingPollutants
     ])
 
 
@@ -78,13 +78,14 @@ Flat weights (.111111)
 FLAT = np.array([
     .111111,     # ConstructionCost
     .111111,     # MaintenanceCost
+    .111111,     # StorageCapacity
+    .111111,     # GroundwaterRecharge
+    .111111,     # Evapotranspiration
     .111111,     # TempReduction
     .111111,     # NutrientReduction
     .111111,     # PathogenReduction
-    .111111,     # AdsorbingPollutants
-    .111111,      # GroundwaterRecharge
-    .111111,      # Evapotranspiration
-    .111111       # StorageCapacity
+    .111111      # AdsorbingPollutants
+
     ])
 
 '''
@@ -93,13 +94,13 @@ To use, run with: -w CUSTOM_WEIGHTS1
 CUSTOM1 = np.array([
     .111111,     # ConstructionCost
     .111111,     # MaintenanceCost
+    .111111,     # StorageCapacity
+    .111111,     # GroundwaterRecharge
+    .111111,     # Evapotranspiration
     .111111,     # TempReduction
     .111111,     # NutrientReduction
     .111111,     # PathogenReduction
-    .111111,     # AdsorbingPollutants
-    .111111,      # GroundwaterRecharge
-    .111111,      # Evapotranspiration
-    .111111       # StorageCapacity
+    .111111      # AdsorbingPollutants
     ])
 
 '''
@@ -108,13 +109,13 @@ To use, run with: -w CUSTOM_WEIGHTS2
 CUSTOM2 = np.array([
     .111111,     # ConstructionCost
     .111111,     # MaintenanceCost
+    .111111,     # StorageCapacity
+    .111111,     # GroundwaterRecharge
+    .111111,     # Evapotranspiration
     .111111,     # TempReduction
     .111111,     # NutrientReduction
     .111111,     # PathogenReduction
-    .111111,     # AdsorbingPollutants
-    .111111,      # GroundwaterRecharge
-    .111111,      # Evapotranspiration
-    .111111       # StorageCapacity
+    .111111      # AdsorbingPollutants
     ])
 
 WeightsIndex = Enum('Weights', [('DEFAULT', 0), ('FLAT', 1), ('CUSTOM1', 2), ('CUSTOM2', 3)])
@@ -134,17 +135,18 @@ FIELD_MAP = {
         "MeasureCode": ("properties", "measure"),
         "ConstructionCost": ("apiData", "constructionCost"),
         "MaintenanceCost": ("apiData", "maintenanceCost"),
-        "CoolSpot": ("apiData", "coolSpot"),
+        "StorageCapacity": ("apiData", "storageCapacity"),
+        "GroundwaterRecharge": ("apiData", "groundwater_recharge"),
+        "Evapotranspiration": ("apiData", "evapotranspiration"),
         "TempReduction": ("apiData", "tempReduction"),
         "NutrientReduction": ("apiData", "captureUnit"),
         "PathogenReduction": ("apiData", "filteringUnit"),
         "AdsorbingPollutants": ("apiData", "settlingUnit"),
-        "FMeasureArea": ("apiData", "Fmeas_area"),
-        "GroundwaterRecharge": ("apiData", "groundwater_recharge"),
-        "Evapotranspiration": ("apiData", "evapotranspiration"),
-        "StorageCapacity": ("apiData", "storageCapacity")
+        "CoolSpot": ("apiData", "coolSpot"),
+        "FMeasureArea": ("apiData", "Fmeas_area")
     }
 HEADERS = list(FIELD_MAP.keys())
+print(HEADERS)
 
 '''
 # Attributes included in analysis
@@ -152,13 +154,13 @@ HEADERS = list(FIELD_MAP.keys())
 ATTRIBUTES_LIST = [
     "ConstructionCost",
     "MaintenanceCost",
+    "StorageCapacity",
+    "GroundwaterRecharge",
+    "Evapotranspiration",
     "TempReduction",
     "NutrientReduction",
     "PathogenReduction",
     "AdsorbingPollutants",
-    "GroundwaterRecharge",
-    "Evapotranspiration",
-    "StorageCapacity"
 ]
 
 '''

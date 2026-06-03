@@ -264,13 +264,7 @@ def write_scores_to_csv(filepath, scenario_scores):
 
 """Load totals from config file or CSV. Returns None if no data is saved"""
 def load_raw_values(use_config=False):
-    names = None
-    raw_values = None
-    if (use_config):
-        names, raw_values = load_config_totals()
-    if (not is_load_successful(names, raw_values)):
-        names, raw_values = load_csv_totals()
-    return names, raw_values
+    return load_config_totals()
 
 
 """Load totals from config file. Assumes extract_data ran before process_data in pipeline"""

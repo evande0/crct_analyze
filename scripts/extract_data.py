@@ -106,7 +106,7 @@ def calc_file_totals(rows, filepath):
             else:
                 totals[key] = row[key]
         totals[key] = round(total, 5)
-#         logger.debug(f"....Set totals value for key {key} to {totals[key]}")
+        logger.debug(f"....Set totals value for key {key} to {totals[key]}")
     logger.info(f"\t✔️  Calculated totals for {os.path.basename(filepath)}")
     return totals
 
