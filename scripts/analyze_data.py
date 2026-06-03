@@ -32,8 +32,8 @@ def analyze_data(showradar):
     plot_weights(config.ATTRIBUTES_LIST, config.WEIGHTS)
     plot_scores(sorted_scenario_scores)
 
-    # Radar chart analysis
-    plot_radar_charts(scenarios, weighted_attributes, config.ATTRIBUTES_LIST, showradar)
+    # Radar & tornado chart analysis
+#     plot_radar_charts(scenarios, weighted_attributes, config.ATTRIBUTES_LIST, showradar)
     plot_comprehensive_charts(scenarios, weighted_attributes, config.ATTRIBUTES_LIST, False)
 
     logger.warning(f"✅ Analysis complete.")
@@ -42,8 +42,6 @@ def analyze_data(showradar):
 """
 Tornado Charts
 """
-
-
 
 def plot_comprehensive_charts(scenarios, A, attributes, show_plots=False):
     """
@@ -135,8 +133,10 @@ def plot_comprehensive_charts(scenarios, A, attributes, show_plots=False):
 
         # Active Profile Overlay
         active_radar_vals = current_scores + [current_scores[0]]
-        ax_radar.plot(angles, active_radar_vals, color='#2b7bba', linewidth=2.5, label=current_name)
-        ax_radar.fill(angles, active_radar_vals, color='#2b7bba', alpha=0.15)
+        ax_radar.plot(angles, active_radar_vals, linewidth=2.5, label=current_name)
+        ax_radar.fill(angles, active_radar_vals, alpha=0.15)
+#         ax_radar.plot(angles, active_radar_vals, color='#2b7bba', linewidth=2.5, label=current_name)
+#         ax_radar.fill(angles, active_radar_vals, color='#2b7bba', alpha=0.15)
 
         ax_radar.set_xticks(angles[:-1])
         ax_radar.set_xticklabels(attributes, fontsize=8)
@@ -184,168 +184,69 @@ def plot_comprehensive_charts(scenarios, A, attributes, show_plots=False):
 
     logger.debug("\t✔️ Finished generating prioritized passports")
 
-# # Colorblind-safe diverging palette (Blue for Gains, Orange/Rust for Losses)
-# COLOR_GAIN = '#2b7bba'  # Muted Blue
-# COLOR_LOSS = '#d95f02'  # Muted Orange/Rust
-
-#     """
-#     Generates a suite of data-accurate bar charts and psychological radar charts.
-#     Assumes scenarios[0] is the Control baseline and excludes it from individual plots.
-#     """
-#     validate_attributes_matrix(A)
-#     logger.debug("\n⏳ Generating comprehensive scenario visualizations")
-#
-#     # Separate Control from active scenarios
-#     control_name = scenarios[0]
-#     control_scores = A[0]
-#
-#     active_scenarios = scenarios[1:]
-#     active_scores = A[1:]
-#
-#     m_active, n = active_scores.shape
-#     ylim = np.round(max(config.WEIGHTS), 3)
-#
-#     # Setup angles for radar processing (closed loop)
-#     angles = np.linspace(0, 2 * np.pi, n, endpoint=False).tolist()
-#     angles += angles[:1]
-#
-#     # -------------------------------------------------------------------------
-#     # 1. TOP 3 SCENARIOS OVERVIEW (Clustered Bar Chart)
-#     # -------------------------------------------------------------------------
-#     # Take up to the first 3 active scenarios for the dominant comparison
-#     top_k = min(3, m_active)
-#     fig, ax = plt.subplots(figsize=(11, 8))
-#
-#     y_pos = np.arange(n)
-#     bar_height = 0.25
-#     # Distinct qualitative color palette for identifying scenarios (CVD friendly)
-#     scenario_colors = ['#5e3c99', '#fdb863', '#e66101']
-#
-#     for idx in range(top_k):
-#         # Offset each bar within the attribute cluster
-#         offset = (idx - (top_k - 1) / 2) * bar_height
-#         ax.barh(y_pos + offset, active_scores[idx], bar_height,
-#                 color=scenario_colors[idx], label=active_scenarios[idx], alpha=0.9)
-#
-#     ax.axvline(0, color='#333333', linestyle='-', linewidth=1.5)
-#     ax.set_yticks(y_pos)
-#     ax.set_yticklabels(attributes, fontsize=10)
-#     ax.invert_yaxis()
-#     ax.set_xlim([-ylim, ylim])
-#     ax.set_xlabel("◄ Losses (Below Control)  │  Gains (Above Control) ►", fontsize=11, fontweight='bold')
-#     ax.set_title(f"Dominance Profile: Top {top_k} Scenarios Compared", fontsize=14, pad=15)
-#     ax.grid(axis='x', linestyle='--', alpha=0.5)
-#     ax.legend(loc='lower left', bbox_to_anchor=(1., 0.))
-#
-#     plt.savefig(f"{PNG_DIR}/Top_Scenarios_Clustered_Overview.png", bbox_inches='tight')
-#     if show_plots: plt.show()
-#     plt.close()
-#
-#     # -------------------------------------------------------------------------
-#     # 2. INDIVIDUAL SCENARIO PASSPORT (Radar Thumbnail + Diverging Bar Side-by-Side)
-#     # -------------------------------------------------------------------------
-#     for i in range(m_active):
-#         current_name = active_scenarios[i]
-#         current_scores = active_scores[i].tolist()
-#
-#         # Create a combined figure with an asymmetric layout (Radar left, Bar right)
-#         fig = plt.figure(figsize=(14, 6))
-#         grid = plt.GridSpec(1, 2, width_ratios=[1, 1.3], wspace=0.3)
-#
-#         # --- A. RADAR THUMBNAIL (Left) ---
-#         ax_radar = fig.add_subplot(grid[0], projection='polar')
-#
-#         # Plot Control Baseline (The Unit Circle at 0)
-#         control_radar_vals = (control_scores.tolist() + [control_scores[0]])
-#         ax_radar.plot(angles, control_radar_vals, color='#444444', linewidth=2, linestyle='--', label=f"{control_name} (0)")
-#
-#         # Plot Active Scenario
-#         active_radar_vals = (current_scores + [current_scores[0]])
-#         ax_radar.plot(angles, active_radar_vals, color=COLOR_GAIN, linewidth=2.5, label=current_name)
-#         ax_radar.fill(angles, active_radar_vals, color=COLOR_GAIN, alpha=0.15)
-#
-#         # Radar Formatting
-#         ax_radar.set_xticks(angles[:-1])
-#         ax_radar.set_xticklabels(attributes, fontsize=8)
-#         ax_radar.set_yticks([-ylim, -ylim/2.0, 0.0, ylim/2.0, ylim])
-#         ax_radar.set_yticklabels(["", "", "Control (0)", "", ""])
-#         ax_radar.set_title("Visual Footprint (Gestalt Shape)", fontsize=11, pad=10, style='italic')
-#
-#         # --- B. DIVERGING BAR CHART (Right) ---
-#         ax_bar = fig.add_subplot(grid[1])
-#         y_pos_bar = np.arange(n)
-#
-#         # Apply colorblind-safe dynamic coloring
-#         bar_colors = [COLOR_GAIN if score >= 0 else COLOR_LOSS for score in current_scores]
-#         ax_bar.barh(y_pos_bar, current_scores, align='center', color=bar_colors, alpha=0.9, height=0.5)
-#
-#         # Bar Formatting
-#         ax_bar.axvline(0, color='#333333', linestyle='-', linewidth=1.5)
-#         ax_bar.set_yticks(y_pos_bar)
-#         ax_bar.set_yticklabels([]) # Hide labels because they are legible on the left radar
-#         ax_bar.invert_yaxis()
-#         ax_bar.set_xlim([-ylim, ylim])
-#         ax_bar.set_xticks([-ylim, -ylim/2.0, 0.0, ylim/2.0, ylim])
-#         ax_bar.set_xticklabels([-ylim, "", "Control", "", ylim])
-#         ax_bar.grid(axis='x', linestyle='--', alpha=0.5)
-#         ax_bar.set_title("Quantifiable Deviation (Accurate Magnitude)", fontsize=11, pad=10, style='italic')
-#
-#         # Clean edges
-#         for spine in ['top', 'right', 'left']:
-#             ax_bar.spines[spine].set_visible(False)
-#
-#         fig.suptitle(f"{current_name} Performance Passport", fontsize=14, fontweight='bold', y=1.02)
-#
-#         png_file = f"Passport_{current_name.replace(' ', '_')}.png"
-#         plt.savefig(f"{PNG_DIR}/{png_file}", bbox_inches='tight')
-#         if show_plots: plt.show()
-#         plt.close()
-#
-#     logger.debug("\t✔️ Finished generating performance passports")
-
 
 
 """
 Weights & Scores
 """
 def plot_scores(scenario_scores):
-    logger.debug("\n⏳Generating scenario score bar chart...")
+    logger.debug("\n⏳ Generating scenario score bar chart...")
     try:
         scenarios, scores = zip(*scenario_scores)
-        plot_score_labels()
-        plot_score_bars(scenarios, scores)
+        max_score = max(abs(s) for s in scores)
+        max_weight = max(abs(w) for w in config.WEIGHTS)
+
+        plot_score_labels(max_score)
+        plot_score_bars(scenarios, scores, max_score)
         save_png("weighted_scores", PNG_DIR)
         plt.close()
     except Exception as e:
         logger.error(f"Failed to generate plot: {e}", exc_info=True)
 
 
-def plot_score_labels():
+def plot_score_labels(max_score):
     plt.figure(figsize=(10, 6))
-    plt.ylim(-1.0, 1.0)
+    plt.ylim(-max_score * 1.5, max_score * 1.5)
     plt.xlabel('Scenario', fontweight='bold')
     plt.ylabel('Weighted Score', fontweight='bold')
     plt.title('Scenario Scores', fontsize=14)
     plt.xticks(rotation=45, ha='right') # Rotate labels for readability
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
-def plot_score_bars(scenarios, scores):
-    bars = plt.bar(scenarios, scores, color='skyblue', edgecolor='navy')
+
+def plot_score_bars(scenarios, scores, max_score):
+    # Setup dynamic ColorBrewer RdYlBu scaling centered exactly at 0.0
+    norm = mcolors.Normalize(vmin=-max_score * 1.5, vmax=max_score * 1.5)
+    cmap_scores = plt.cm.get_cmap('RdYlBu')
+    bar_colors = [cmap_scores(norm(score)) for score in scores]
+
+    bars = plt.bar(scenarios, scores, color=bar_colors, edgecolor='#555555', linewidth=0.7, alpha=0.9)
+
+    # Draw a clean baseline reference at 0
+    plt.axhline(0, color='#333333', linestyle='-', linewidth=1.2)
+
+    # Adjust text placement dynamically so text doesn't overlap the bars
     for bar in bars:
         yval = bar.get_height()
-        plt.text(bar.get_x() + bar.get_width()/2, yval, round(yval, 4), va='bottom', ha='center', fontsize=9)
+        va_dir = 'bottom' if yval >= 0 else 'top'
+        # Tiny offset push so text sits cleanly just past the edge of the bar
+        offset = 0.02 if yval >= 0 else -0.05
+
+        plt.text(bar.get_x() + bar.get_width()/2, yval + offset,
+                 f"{yval:.4f}", va=va_dir, ha='center', fontsize=9, fontweight='bold')
     plt.tight_layout()
 
+
 def plot_weights(attributes, weights):
-    logger.debug("\n⏳Plotting weights distribution...")
+    logger.debug("\n⏳ Plotting weights distribution...")
     try:
-#         plt.figure(figsize=(10, 6))
-        plot_weight_labels(min(1, np.max(weights)*2))
+        plot_weight_labels(min(1, np.max(weights)*1.2))
         plot_weight_bars(attributes, weights)
         save_png("weight_distribution", PNG_DIR)
         plt.close()
     except Exception as e:
         logger.error(f"Failed to generate plot: {e}", exc_info=True)
+
 
 def plot_weight_labels(ylim):
     plt.figure(figsize=(10, 6))
@@ -356,18 +257,19 @@ def plot_weight_labels(ylim):
     plt.xticks(rotation=45, ha='right')
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
-def plot_weight_bars(attributes, weights):
-    bars = plt.bar(attributes, weights, color='skyblue', edgecolor='navy')
-    for bar in bars:
-        yval = bar.get_height()
-        plt.text(bar.get_x() + bar.get_width()/2, yval, round(yval, 4), va='bottom', ha='center', fontsize=9)
-    plt.tight_layout() # Prevents label cutoff
 
 def plot_weight_bars(attributes, weights):
-    bars = plt.bar(attributes, weights, color='skyblue', edgecolor='navy')
+    # Using a uniform, high-visibility green derived straight from the standard ColorBrewer Greens colormap
+    unified_green = plt.cm.Greens(0.6)
+    dark_green_edge = plt.cm.Greens(0.9)
+    green_shades = [plt.cm.Greens(val) for val in np.linspace(0.9, 0.5, len(attributes))]
+
+    bars = plt.bar(attributes, weights, color=green_shades, edgecolor=dark_green_edge, linewidth=1.0, alpha=0.9)
+
     for bar in bars:
         yval = bar.get_height()
-        plt.text(bar.get_x() + bar.get_width()/2, yval, round(yval, 4), va='bottom', ha='center', fontsize=9)
+        plt.text(bar.get_x() + bar.get_width()/2, yval + (ylim*0.01 if 'ylim' in locals() else 0.005),
+                 f"{yval:.4f}", va='bottom', ha='center', fontsize=9)
     plt.tight_layout() # Prevents label cutoff
 
 
