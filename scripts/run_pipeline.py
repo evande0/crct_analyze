@@ -28,7 +28,6 @@ def run_full_pipeline(args, logger):
         logger.warning("🎉 Data pipeline completed successfully.")
         logger.warning(f"📁 See data and analysis in {SAVE_DIR}\n")
 
-        run_sensitivity_analysis()
     except Exception as e:
         log_failure(e, logger)
     finally:
