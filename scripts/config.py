@@ -146,7 +146,6 @@ FIELD_MAP = {
         "FMeasureArea": ("apiData", "Fmeas_area")
     }
 HEADERS = list(FIELD_MAP.keys())
-print(HEADERS)
 
 '''
 # Attributes included in analysis

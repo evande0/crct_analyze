@@ -48,11 +48,11 @@ def plot_comprehensive_charts(scenarios, A, attributes, show_plots=False):
     sorted_names, sorted_scores = sorted_attributes(A, scenarios)
 
     m_test, n = sorted_scores.shape
-    ylim = 0.25
+    ylim = 0.2
 
     plot_top_scores(sorted_scores, sorted_names, attributes, ylim, show_plots)
 
-    norm = mcolors.Normalize(vmin=-ylim, vmax=ylim)
+    norm = mcolors.Normalize(vmin=-ylim*1.1, vmax=ylim*1.1)
     cmap_diverging = plt.cm.get_cmap('RdYlBu')
 
     # Scenario radar & tornado charts
@@ -87,17 +87,25 @@ def plot_comprehensive_charts(scenarios, A, attributes, show_plots=False):
 
             # 1. Place the Attribute Name safely on the right-edge index column
             ax_bar.text(ylim * 1.05, idx, attributes[idx], ha='left', va='center',
-                        fontsize=9.5, fontweight='bold', color='#222222')
+                        fontsize=9.5, fontweight='bold', color='#000000')
 
             # 2. Dynamic Value Labels placed right next to the bar tips
             if score >= 0:
-                # Positive bar: place score numbers just to the right of the bar tip
-                ax_bar.text(score + text_padding, idx, f"{score:+.4f}", ha='left', va='center',
-                            fontsize=8.5, color='#333333')
+                if score < ylim * 0.75:
+                    # Positive bar: place score numbers just to the right of the bar tip
+                    ax_bar.text(score + text_padding, idx, f"{score:+.4f}", ha='left', va='center',
+                                fontsize=8.5, fontweight='semibold', color='#222222')
+                else:
+                    ax_bar.text(score - text_padding, idx, f"{score:+.4f}", ha='right', va='center',
+                                fontsize=8.5, fontweight='semibold', color='#ffffff')
             else:
-                # Negative bar: place score numbers just to the left of the bar tip
-                ax_bar.text(score - text_padding, idx, f"{score:+.4f}", ha='right', va='center',
-                            fontsize=8.5, color='#333333')
+                if score > -ylim * 0.75:
+                    # Negative bar: place score numbers just to the left of the bar tip
+                    ax_bar.text(score - text_padding, idx, f"{score:+.4f}", ha='right', va='center',
+                                fontsize=8.5, fontweight='semibold', color='#222222')
+                else:
+                    ax_bar.text(score + text_padding, idx, f"{score:+.4f}", ha='left', va='center',
+                                fontsize=8.5, fontweight='semibold', color='#ffffff')
 
 
         for spine in ['top', 'right', 'left']:
