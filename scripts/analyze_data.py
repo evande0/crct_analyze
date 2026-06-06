@@ -27,7 +27,7 @@ def analyze_data(showradar):
     plot_scores(sorted_scenario_scores)
 
     # Radar & tornado chart analysis
-    plot_comprehensive_charts(scenarios, weighted_attributes, config.ATTRIBUTES_LIST, False)
+    plot_scenario_charts(scenarios, weighted_attributes, config.ATTRIBUTES_LIST, False)
 
     logger.warning(f"✅ Analysis complete.")
 
@@ -72,36 +72,20 @@ def plot_heatmap_labels(fig, ax, cax, scenario_names, attribute_names):
     ax.set_ylabel("Scenarios", fontsize=12, labelpad=10)
 
 
-def plot_tornado_labels(ax_bar, ylim, current_name):
-    ax_bar.axvline(0, color='#333333', linestyle='-', linewidth=1.5)
-    ax_bar.set_yticks([])
-    ax_bar.set_yticklabels([])
-    ax_bar.invert_yaxis()
-    ax_bar.set_xticks([-ylim, -ylim/2.0, 0.0, ylim/2.0, ylim])
-    ax_bar.set_xticklabels([-ylim, "", f"({current_name})", "", ylim])
-    ax_bar.grid(axis='x', linestyle='--', alpha=0.4)
-
-    ax_bar.set_xlim([-ylim, ylim * 1.4])
-
-
-
 """
 Scenario Charts
 """
-def plot_comprehensive_charts(scenarios, A, attributes, show_plots=False):
+def plot_scenario_charts(scenarios, A, attributes, show_plots=False):
     logger.debug("\n⏳ Sorting scenarios and generating refined visualizations")
     control_name = scenarios[0]
     control_scores = A[0]
     sorted_names, sorted_scores = sorted_attributes(A, scenarios)
-
     m_test, n = sorted_scores.shape
     ylim = 0.2
-
     plot_top_scores(sorted_scores, sorted_names, attributes, ylim, show_plots)
     norm = mcolors.Normalize(vmin=-ylim*1.1, vmax=ylim*1.1)
     cmap_diverging = plt.cm.get_cmap('PRGn')
 
-    # Scenario radar & tornado charts
     for i in range(m_test):
         current_name = sorted_names[i]
         current_scores = sorted_scores[i].tolist()
@@ -109,38 +93,13 @@ def plot_comprehensive_charts(scenarios, A, attributes, show_plots=False):
 
         # Tornado chart
         fig, ax_bar = plt.subplots(figsize=(7,5))
-
         bar_colors = [cmap_diverging(norm(score)) for score in current_scores]
         y_pos_bar = np.arange(n)
-        ax_bar.barh(y_pos_bar, current_scores, align='center', color=bar_colors, edgecolor='#555555', linewidth=0.5, alpha=0.9, height=0.55)
-        plot_tornado_labels(ax_bar, ylim, current_name)
+        plot_tornado_labels(ax_bar, ylim, current_name, current_scores, bar_colors, y_pos_bar)
         text_padding = ylim * 0.04
         for idx in range(n):
             score = current_scores[idx]
-
-            # 1. Place the Attribute Name safely on the right-edge index column
-            ax_bar.text(ylim * 1.05, idx, attributes[idx], ha='left', va='center',
-                        fontsize=9.5, fontweight='bold', color='#000000')
-
-            # 2. Dynamic Value Labels placed right next to the bar tips
-            if score >= 0:
-                if score < ylim * 0.75:
-                    # Positive bar: place score numbers just to the right of the bar tip
-                    ax_bar.text(score + text_padding, idx, f"{score:+.4f}", ha='left', va='center',
-                                fontsize=8.5, fontweight='semibold', color='#222222')
-                else:
-                    ax_bar.text(score - text_padding, idx, f"{score:+.4f}", ha='right', va='center',
-                                fontsize=8.5, fontweight='semibold', color='#ffffff')
-            else:
-                if score > -ylim * 0.75:
-                    # Negative bar: place score numbers just to the left of the bar tip
-                    ax_bar.text(score - text_padding, idx, f"{score:+.4f}", ha='right', va='center',
-                                fontsize=8.5, fontweight='semibold', color='#222222')
-                else:
-                    ax_bar.text(score + text_padding, idx, f"{score:+.4f}", ha='left', va='center',
-                                fontsize=8.5, fontweight='semibold', color='#ffffff')
-
-
+            place_tornado_values(ax_bar, idx, attributes[idx], score, ylim, text_padding)
         for spine in ['top', 'right', 'left']:
             ax_bar.spines[spine].set_visible(False)
         fig.suptitle(f"Attribute Scores", fontsize=14, fontweight='bold', y=1.02)
@@ -151,6 +110,38 @@ def plot_comprehensive_charts(scenarios, A, attributes, show_plots=False):
         plt.close()
 
     logger.debug("\t✔️ Finished generating prioritized passports")
+
+def plot_tornado_labels(ax_bar, ylim, current_name, current_scores, bar_colors, y_pos_bar):
+    ax_bar.barh(y_pos_bar, current_scores, align='center', color=bar_colors, edgecolor='#555555', linewidth=0.5, alpha=0.9, height=0.55)
+    ax_bar.axvline(0, color='#333333', linestyle='-', linewidth=1.5)
+    ax_bar.set_yticks([])
+    ax_bar.set_yticklabels([])
+    ax_bar.invert_yaxis()
+    ax_bar.set_xticks([-ylim, -ylim/2.0, 0.0, ylim/2.0, ylim])
+    ax_bar.set_xticklabels([-ylim, "", f"({current_name})", "", ylim])
+    ax_bar.grid(axis='x', linestyle='--', alpha=0.4)
+    ax_bar.set_xlim([-ylim, ylim * 1.4])
+
+
+def place_tornado_values(ax_bar, idx, attr, score, ylim, text_padding):
+    ax_bar.text(ylim * 1.05, idx, attr, ha='left', va='center',
+                fontsize=9.5, fontweight='bold', color='#000000')
+    if score >= 0:
+        if score < ylim * 0.75:
+            # Positive bar: place score numbers just to the right of the bar tip
+            ax_bar.text(score + text_padding, idx, f"{score:+.4f}", ha='left', va='center',
+                        fontsize=8.5, fontweight='semibold', color='#222222')
+        else:
+            ax_bar.text(score - text_padding, idx, f"{score:+.4f}", ha='right', va='center',
+                        fontsize=8.5, fontweight='semibold', color='#ffffff')
+    else:
+        if score > -ylim * 0.75:
+            # Negative bar: place score numbers just to the left of the bar tip
+            ax_bar.text(score - text_padding, idx, f"{score:+.4f}", ha='right', va='center',
+                        fontsize=8.5, fontweight='semibold', color='#222222')
+        else:
+            ax_bar.text(score + text_padding, idx, f"{score:+.4f}", ha='left', va='center',
+                        fontsize=8.5, fontweight='semibold', color='#ffffff')
 
 
 def sorted_attributes(A, scenarios):
@@ -286,7 +277,6 @@ def plot_weight_labels(ylim):
     plt.ylim(0, 0.25)
     plt.title('Weight Distribution', fontsize=14)
     plt.xticks(rotation=45, ha='right')
-#     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
 
 def plot_weight_bars(attributes, weights, max_weight):
