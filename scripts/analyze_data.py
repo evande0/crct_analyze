@@ -20,7 +20,7 @@ def analyze_data(showradar):
     weighted_attributes = np.array(weighted_attributes)
 
     # Plot heat map of normalised performance scores
-    generate_scenario_heatmap(A_norm[1:], scenarios[1:], config.ATTRIBUTES_LIST, config.PNG_DIR, "norm_heatmap.png" )
+    generate_perf_heatmap(A_norm[1:], scenarios[1:], config.ATTRIBUTES_LIST, "norm_heatmap.png" )
 
     # Plot weights & scores
     plot_weights(config.ATTRIBUTES_LIST, get_weights())
@@ -35,27 +35,27 @@ def analyze_data(showradar):
 Heat Map
 """
 
-def generate_scenario_heatmap(A, scenario_names, attribute_names, png_dir, filename="heatmap.png"):
+def generate_perf_heatmap(A, scenario_names, attribute_names, filename="heatmap.png"):
     if A.shape != (len(scenario_names), len(attribute_names)):
         raise ValueError(f"Matrix shape ({A.shape}) does not match provided labels: "
                          f"({len(scenario_names)}x{len(attribute_names)}).")
 
     fig, ax = plt.subplots(figsize=(8, 4.5))
     cax = ax.imshow(A, cmap='PRGn', vmin=-1, vmax=1, aspect='auto')
+
     plot_heatmap_labels(fig, ax, cax, scenario_names, attribute_names)
+    plot_heatmap_values(A, ax)
+
     fig.tight_layout()
-
-    if not os.path.exists(png_dir):
-        os.makedirs(png_dir)
-
-    save_path = os.path.join(png_dir, filename)
+    save_path = os.path.join(config.PNG_DIR, filename)
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close(fig)
 
-    print(f"Matplotlib heatmap successfully saved to: {save_path}")
-
 
 def plot_heatmap_labels(fig, ax, cax, scenario_names, attribute_names):
+    ax.set_title("Normalised Performance Values", fontsize=12, pad=20, weight='bold')
+    ax.set_xlabel("Attributes", fontsize=10, labelpad=10)
+    ax.set_ylabel("Scenarios", fontsize=10, labelpad=10)
     ax.set_xticks(np.arange(len(attribute_names)))
     ax.set_yticks(np.arange(len(scenario_names)))
     ax.set_xticklabels(attribute_names)
@@ -67,9 +67,19 @@ def plot_heatmap_labels(fig, ax, cax, scenario_names, attribute_names):
     ax.tick_params(which="minor", bottom=False, left=False)
     cbar = fig.colorbar(cax, ax=ax, pad=0.02)
     cbar.set_label('Normalized Value Scale (-1 to 1)', rotation=270, labelpad=15)
-    ax.set_title("Scenario vs. Attribute Heatmap", fontsize=16, pad=20, weight='bold')
-    ax.set_xlabel("Attributes", fontsize=12, labelpad=10)
-    ax.set_ylabel("Scenarios", fontsize=12, labelpad=10)
+
+
+def plot_heatmap_values(A, ax):
+    m,n = A.shape
+    for i in range(m):
+        for j in range(n):
+            value = A[i, j]
+            text_label = f"{value:.4f}"
+            text_color = "white" if abs(value) > 0.5 else "black"
+            ax.text(j, i, text_label,
+                    ha="center", va="center",
+                    color=text_color,
+                    fontsize=7)
 
 
 """
@@ -79,16 +89,15 @@ def plot_scenario_charts(scenarios, A, attributes, show_plots=False):
     logger.debug("\n⏳ Sorting scenarios and generating refined visualizations")
     control_name = scenarios[0]
     control_scores = A[0]
-    sorted_names, sorted_scores = sorted_attributes(A, scenarios)
-    m_test, n = sorted_scores.shape
+    m_test, n = A.shape
     ylim = 0.2
-    plot_top_scores(sorted_scores, sorted_names, attributes, ylim, show_plots)
+    plot_top_scores(A, scenarios, attributes, ylim, show_plots)
     norm = mcolors.Normalize(vmin=-ylim*1.1, vmax=ylim*1.1)
     cmap_diverging = plt.cm.get_cmap('PRGn')
 
     for i in range(m_test):
-        current_name = sorted_names[i]
-        current_scores = sorted_scores[i].tolist()
+        current_name = scenarios[i]
+        current_scores = A[i].tolist()
         plot_radar(n, control_name, control_scores, current_name, current_scores, attributes, ylim)
 
         # Tornado chart
@@ -144,16 +153,9 @@ def place_tornado_values(ax_bar, idx, attr, score, ylim, text_padding):
                         fontsize=8.5, fontweight='semibold', color='#ffffff')
 
 
-def sorted_attributes(A, scenarios):
-    test_names = np.array(scenarios[1:])
-    test_scores = A[1:]
-    row_sums = np.sum(test_scores, axis=1)
-    sorted_indices = np.argsort(row_sums)[::-1]
-    sorted_names = test_names[sorted_indices].tolist()
-    sorted_scores = test_scores[sorted_indices]
-    return sorted_names, sorted_scores
-
-
+"""
+Top 3 Scenarios
+"""
 def plot_top_scores(sorted_scores, sorted_names, attributes, ylim, show_plots):
     m_test, n = sorted_scores.shape
     top_k = min(3, m_test)
