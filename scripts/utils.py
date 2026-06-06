@@ -138,12 +138,41 @@ def get_raw_attributes():
     return config.raw_attr_values
 
 """ Normalized data """
-def set_attributes_norm(new_attributes_norm):
-    config.attributes_norm = new_attributes_norm
-    config.logger.debug(f"\t✔️  Set attributes_norm: {config.attributes_norm}")
+def set_attributes_norm(A, scenarios):
+    config.logger.error(f"\t Settign attributes norm: {A}, shape: {A.shape}")
+    sorted_norm = sorted(
+        zip(scenarios, A),
+        key=lambda x: x[0]
+    )
+    config.attributes_norm = sorted_norm
+    config.logger.error(f"\t✔️  Set attributes_norm: {sorted_norm}")
 
-def get_attributes_norm():
-    return config.attributes_norm
+def get_attributes_norm(with_names=False):
+    scenarios, A_norm = zip(*config.attributes_norm)
+    A_norm = np.array(A_norm)
+    config.logger.debug(f"\tReturning attributes_norm: {A_norm}, type: {type(A_norm)}, shape: {A_norm.shape}")
+
+    if with_names:
+        config.logger.debug(f"Returning scenarios sorted: {scenarios}")
+        return scenarios, A_norm
+    else:
+        return A_norm
+
+""" Weighted attributes """
+def set_weighted_attributes(A_weight, scenarios):
+    sorted_attributes = sorted(
+        zip(scenarios, A_weight),
+        key=lambda x: x[0]
+    )
+    config.weighted_attributes = sorted_attributes
+    config.logger.debug(f"\t✔️  Set weight_attributes: {A_weight}")
+
+def get_weighted_attributes(with_names=False):
+    scenarios, sorted_weighted_attr = zip(*config.weighted_attributes)
+    if with_names:
+        return scenarios, sorted_weighted_attr
+    else:
+        return sorted_weighted_attr
 
 """ Sorted Scores """
 def set_sorted_scenario_scores(new_sorted_scores):
@@ -153,19 +182,11 @@ def set_sorted_scenario_scores(new_sorted_scores):
 def get_sorted_scenario_scores():
     return config.sorted_scenario_scores
 
-""" Weighted attributes """
-def set_weighted_attributes(new_weight_attr):
-    config.weighted_attributes = new_weight_attr
-    config.logger.debug(f"\t✔️  Set weight_attributes: {config.weighted_attributes}")
-
-def get_weighted_attributes():
-    return config.weighted_attributes
-
 """ Weights """
 def set_weights(weights_name):
     weights_idx = config.WeightsIndex[weights_name].value
     config.WEIGHTS = config.WEIGHTS_OPTS[weights_idx]
-    config.logger.debug(f"\t✔️  Set WEIGHTS: {config.WEIGHTS}")
+    config.logger.debug(f"\t✔️  Set WEIGHTS: {get_weights()}")
 
 def get_weights():
     return config.WEIGHTS

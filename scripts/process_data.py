@@ -20,7 +20,7 @@ def process_data(use_config=False):
     validate_attributes_matrix(raw_values)
 
     # Normalize attributes
-    attributes_norm = normalize_attributes(raw_values)
+    attributes_norm = normalize_attributes(raw_values, scenarios)
 
     # Validate weights vector
     validate_weights();
@@ -29,7 +29,7 @@ def process_data(use_config=False):
     # Compute weighted attributes
     weighted_attributes = np.round(attributes_norm * config.WEIGHTS, 10)
     np.savetxt(f"{PROCESSED_DIR}/weighted_attributes.csv", weighted_attributes, delimiter=',', fmt='%10.5f')
-    set_weighted_attributes(weighted_attributes)
+    set_weighted_attributes(weighted_attributes, scenarios)
 
     # Compute scores
     logger.debug("⏳Computing weighted scores")
@@ -54,11 +54,11 @@ def process_data(use_config=False):
     Normalization
 -------------------------"""
 
-def normalize_attributes(raw_values):
+def normalize_attributes(raw_values, scenarios):
     attributes_matrix = invert_costs(raw_values);
     attributes_norm = l2_norm(attributes_matrix)
     validate_attributes_matrix(attributes_norm)
-    set_attributes_norm(attributes_norm)
+    set_attributes_norm(attributes_norm, scenarios)
     return attributes_norm
 
 """

@@ -8,34 +8,81 @@ import matplotlib.colors as mcolors
 from config import *
 from utils import *
 
+
 logger = None
 
 def analyze_data(showradar):
     # Load data from Process stage
-    scenarios = get_scenario_names()
-    if not scenarios:
-        logger.error("❗Could not retrieve scenarios data from Config.")
-        raise ValueError("Array of scenario names was empty.")
-    weighted_attributes = get_weighted_attributes()
+    scenarios, A_norm = get_attributes_norm(with_names=True)
+    weighted_attributes = get_weighted_attributes(with_names=False)
     sorted_scenario_scores = get_sorted_scenario_scores()
-
-    # Sort by scenario name
-    sorted_pairs = sorted(
-        zip(scenarios, weighted_attributes),
-        key=lambda x: x[0]
-    )
-    scenarios, weighted_attributes = zip(*sorted_pairs)
     scenarios = list(scenarios)
     weighted_attributes = np.array(weighted_attributes)
 
+    # Plot heat map of normalised performance scores
+    generate_scenario_heatmap(A_norm[1:], scenarios[1:], config.ATTRIBUTES_LIST, config.PNG_DIR, "norm_heatmap.png" )
+
     # Plot weights & scores
-    plot_weights(config.ATTRIBUTES_LIST, config.WEIGHTS)
+    plot_weights(config.ATTRIBUTES_LIST, get_weights())
     plot_scores(sorted_scenario_scores)
 
     # Radar & tornado chart analysis
     plot_comprehensive_charts(scenarios, weighted_attributes, config.ATTRIBUTES_LIST, False)
 
     logger.warning(f"✅ Analysis complete.")
+
+"""
+Heat Map
+"""
+
+def generate_scenario_heatmap(A, scenario_names, attribute_names, png_dir, filename="heatmap.png"):
+    if A.shape != (len(scenario_names), len(attribute_names)):
+        raise ValueError(f"Matrix shape ({A.shape}) does not match provided labels: "
+                         f"({len(scenario_names)}x{len(attribute_names)}).")
+
+    fig, ax = plt.subplots(figsize=(8, 4.5))
+    cax = ax.imshow(A, cmap='PRGn', vmin=-1, vmax=1, aspect='auto')
+    plot_heatmap_labels(fig, ax, cax, scenario_names, attribute_names)
+    fig.tight_layout()
+
+    if not os.path.exists(png_dir):
+        os.makedirs(png_dir)
+
+    save_path = os.path.join(png_dir, filename)
+    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    plt.close(fig)
+
+    print(f"Matplotlib heatmap successfully saved to: {save_path}")
+
+
+def plot_heatmap_labels(fig, ax, cax, scenario_names, attribute_names):
+    ax.set_xticks(np.arange(len(attribute_names)))
+    ax.set_yticks(np.arange(len(scenario_names)))
+    ax.set_xticklabels(attribute_names)
+    ax.set_yticklabels(scenario_names)
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+    ax.set_xticks(np.arange(len(attribute_names)) - 0.5, minor=True)
+    ax.set_yticks(np.arange(len(scenario_names)) - 0.5, minor=True)
+    ax.grid(which="minor", color="lightgray", linestyle='-', linewidth=0.5)
+    ax.tick_params(which="minor", bottom=False, left=False)
+    cbar = fig.colorbar(cax, ax=ax, pad=0.02)
+    cbar.set_label('Normalized Value Scale (-1 to 1)', rotation=270, labelpad=15)
+    ax.set_title("Scenario vs. Attribute Heatmap", fontsize=16, pad=20, weight='bold')
+    ax.set_xlabel("Attributes", fontsize=12, labelpad=10)
+    ax.set_ylabel("Scenarios", fontsize=12, labelpad=10)
+
+
+def plot_tornado_labels(ax_bar, ylim, current_name):
+    ax_bar.axvline(0, color='#333333', linestyle='-', linewidth=1.5)
+    ax_bar.set_yticks([])
+    ax_bar.set_yticklabels([])
+    ax_bar.invert_yaxis()
+    ax_bar.set_xticks([-ylim, -ylim/2.0, 0.0, ylim/2.0, ylim])
+    ax_bar.set_xticklabels([-ylim, "", f"({current_name})", "", ylim])
+    ax_bar.grid(axis='x', linestyle='--', alpha=0.4)
+
+    ax_bar.set_xlim([-ylim, ylim * 1.4])
+
 
 
 """
@@ -51,9 +98,8 @@ def plot_comprehensive_charts(scenarios, A, attributes, show_plots=False):
     ylim = 0.2
 
     plot_top_scores(sorted_scores, sorted_names, attributes, ylim, show_plots)
-
     norm = mcolors.Normalize(vmin=-ylim*1.1, vmax=ylim*1.1)
-    cmap_diverging = plt.cm.get_cmap('RdYlBu')
+    cmap_diverging = plt.cm.get_cmap('PRGn')
 
     # Scenario radar & tornado charts
     for i in range(m_test):
@@ -63,25 +109,12 @@ def plot_comprehensive_charts(scenarios, A, attributes, show_plots=False):
 
         # Tornado chart
         fig, ax_bar = plt.subplots(figsize=(7,5))
-        y_pos_bar = np.arange(n)
+
         bar_colors = [cmap_diverging(norm(score)) for score in current_scores]
+        y_pos_bar = np.arange(n)
         ax_bar.barh(y_pos_bar, current_scores, align='center', color=bar_colors, edgecolor='#555555', linewidth=0.5, alpha=0.9, height=0.55)
-
-        ax_bar.axvline(0, color='#333333', linestyle='-', linewidth=1.5)
-        ax_bar.set_yticks([])
-        ax_bar.set_yticklabels([])
-        ax_bar.invert_yaxis()
-
-        ax_bar.set_xticks([-ylim, -ylim/2.0, 0.0, ylim/2.0, ylim])
-        ax_bar.set_xticklabels([-ylim, "", f"({current_name})", "", ylim])
-        ax_bar.grid(axis='x', linestyle='--', alpha=0.4)
-
-#         short_names = [f"Scenario {i}" for i in range(1,len(scenarios)+1)]
-
-        # Padding adjustments for text layout stability
+        plot_tornado_labels(ax_bar, ylim, current_name)
         text_padding = ylim * 0.04
-        ax_bar.set_xlim([-ylim, ylim * 1.4])
-
         for idx in range(n):
             score = current_scores[idx]
 
@@ -209,20 +242,19 @@ def plot_scores(scenario_scores):
 
 
 def plot_score_labels(max_score):
-    plt.figure(figsize=(7,4))
+    plt.figure(figsize=(8,6))
     plt.ylim(-max_score * 1.5, max_score * 1.5)
     plt.ylabel('Score', fontweight='bold')
     plt.xlabel('Scenario', fontweight='bold')
     plt.title('Weighted Scenario Scores', fontsize=14)
-    plt.xticks(rotation=45, ha='right') # Rotate labels for readability
-#     plt.grid(axis='y', linestyle='--', alpha=0.5)
+    plt.xticks(rotation=45, ha='right')
 
 
 def plot_score_bars(scenarios, scores, max_score):
     norm = mcolors.Normalize(vmin=-max_score * 1.5, vmax=max_score * 1.5)
     cmap_scores = plt.cm.get_cmap('RdYlBu')
     bar_colors = [cmap_scores(norm(score)) for score in scores]
-    short_names = [f"Scenario {i}" for i in range(1,len(scenarios)+1)]
+    short_names = scenarios
     bars = plt.bar(short_names, scores, color=bar_colors, edgecolor='#555555', linewidth=0.7, alpha=0.9)
     plt.axhline(0, color='#333333', linestyle='-', linewidth=1.2)
 
