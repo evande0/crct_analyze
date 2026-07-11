@@ -20,6 +20,7 @@ def analyze_data(showradar):
     weighted_attributes = np.array(weighted_attributes)
 
     # Plot heat map of normalised performance scores
+    apply_lncs_formatting()
     generate_perf_heatmap(A_norm[1:], scenarios[1:], config.ATTRIBUTES_LIST, "norm_heatmap.png" )
 
     # Plot weights & scores
@@ -40,13 +41,13 @@ def generate_perf_heatmap(A, scenario_names, attribute_names, filename="heatmap.
         raise ValueError(f"Matrix shape ({A.shape}) does not match provided labels: "
                          f"({len(scenario_names)}x{len(attribute_names)}).")
 
-    fig, ax = plt.subplots(figsize=(8, 4.5))
+    fig, ax = plt.subplots(figsize=(4.8, 2.2))
     cax = ax.imshow(A, cmap='PRGn', vmin=-1, vmax=1, aspect='auto')
 
     plot_heatmap_labels(fig, ax, cax, scenario_names, attribute_names)
     plot_heatmap_values(A, ax)
 
-    fig.tight_layout()
+    fig.tight_layout(pad=0.5)
     save_path = os.path.join(config.PNG_DIR, filename)
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close(fig)
@@ -65,8 +66,8 @@ def plot_heatmap_labels(fig, ax, cax, scenario_names, attribute_names):
     ax.set_yticks(np.arange(len(scenario_names)) - 0.5, minor=True)
     ax.grid(which="minor", color="lightgray", linestyle='-', linewidth=0.5)
     ax.tick_params(which="minor", bottom=False, left=False)
-    cbar = fig.colorbar(cax, ax=ax, pad=0.02)
-    cbar.set_label('Normalized Value Scale (-1 to 1)', rotation=270, labelpad=15)
+    cbar = fig.colorbar(cax, ax=ax, pad=0.01, shrink=0.85)
+    cbar.set_label('Scale (-1 to 1)', rotation=270, labelpad=10, fontsize=8)
 
 
 def plot_heatmap_values(A, ax):
@@ -74,7 +75,7 @@ def plot_heatmap_values(A, ax):
     for i in range(m):
         for j in range(n):
             value = A[i, j]
-            text_label = f"{value:.4f}"
+            text_label = f"{value:.2f}"
             text_color = "white" if abs(value) > 0.5 else "black"
             ax.text(j, i, text_label,
                     ha="center", va="center",
@@ -101,7 +102,7 @@ def plot_scenario_charts(scenarios, A, attributes, show_plots=False):
         plot_radar(n, control_name, control_scores, current_name, current_scores, attributes, ylim)
 
         # Tornado chart
-        fig, ax_bar = plt.subplots(figsize=(7,5))
+        fig, ax_bar = plt.subplots(figsize=(4.8, 2.5))
         bar_colors = [cmap_diverging(norm(score)) for score in current_scores]
         y_pos_bar = np.arange(n)
         plot_tornado_labels(ax_bar, ylim, current_name, current_scores, bar_colors, y_pos_bar)
@@ -111,7 +112,6 @@ def plot_scenario_charts(scenarios, A, attributes, show_plots=False):
             place_tornado_values(ax_bar, idx, attributes[idx], score, ylim, text_padding)
         for spine in ['top', 'right', 'left']:
             ax_bar.spines[spine].set_visible(False)
-        fig.suptitle(f"Attribute Scores", fontsize=14, fontweight='bold', y=1.02)
 
         png_file = f"{current_name.replace(':', '')} - Tornado.png"
         plt.savefig(f"{PNG_DIR}/{png_file}", bbox_inches='tight')
@@ -133,69 +133,29 @@ def plot_tornado_labels(ax_bar, ylim, current_name, current_scores, bar_colors, 
 
 
 def place_tornado_values(ax_bar, idx, attr, score, ylim, text_padding):
-    ax_bar.text(ylim * 1.05, idx, attr, ha='left', va='center',
-                fontsize=9.5, fontweight='bold', color='#000000')
+    ax_bar.text(ylim * 1.02, idx, attr, ha='left', va='center',
+                fontsize=7.5, fontweight='bold', color='#000000')
     if score >= 0:
         if score < ylim * 0.75:
             # Positive bar: place score numbers just to the right of the bar tip
-            ax_bar.text(score + text_padding, idx, f"{score:+.4f}", ha='left', va='center',
-                        fontsize=8.5, fontweight='semibold', color='#222222')
+            ax_bar.text(score + text_padding, idx, f"{score:+.3f}", ha='left', va='center',
+                        fontsize=7, color='#222222')
         else:
-            ax_bar.text(score - text_padding, idx, f"{score:+.4f}", ha='right', va='center',
-                        fontsize=8.5, fontweight='semibold', color='#ffffff')
+            ax_bar.text(score - text_padding, idx, f"{score:+.3f}", ha='right', va='center',
+                        fontsize=7, color='#ffffff')
     else:
         if score > -ylim * 0.75:
             # Negative bar: place score numbers just to the left of the bar tip
-            ax_bar.text(score - text_padding, idx, f"{score:+.4f}", ha='right', va='center',
-                        fontsize=8.5, fontweight='semibold', color='#222222')
+            ax_bar.text(score - text_padding, idx, f"{score:+.3f}", ha='right', va='center',
+                        fontsize=7, color='#222222')
         else:
-            ax_bar.text(score + text_padding, idx, f"{score:+.4f}", ha='left', va='center',
-                        fontsize=8.5, fontweight='semibold', color='#ffffff')
+            ax_bar.text(score + text_padding, idx, f"{score:+.3f}", ha='left', va='center',
+                        fontsize=7, color='#ffffff')
 
-
-"""
-Top 3 Scenarios
-"""
-def plot_top_scores(sorted_scores, sorted_names, attributes, ylim, show_plots):
-    m_test, n = sorted_scores.shape
-    top_k = min(3, m_test)
-    fig, ax = plt.subplots(figsize=(4,7))
-    y_pos = np.arange(n)
-
-    plot_top_bars(ax, top_k, sorted_scores, sorted_names, y_pos)
-    plot_top_labels(ax, y_pos, attributes, ylim, top_k)
-
-    plt.savefig(f"{PNG_DIR}/Top_Scenarios.png", bbox_inches='tight')
-    if show_plots:
-        plt.show()
-    plt.close()
-
-
-def plot_top_bars(ax, top_k, sorted_scores, sorted_names, y_pos):
-    bar_height = 0.25
-    green_shades = [plt.cm.Greens(val) for val in np.linspace(0.9, 0.5, top_k)]
-    for idx in range(top_k):
-        offset = (idx - (top_k - 1) / 2) * bar_height
-        ax.barh(y_pos + offset, sorted_scores[idx], bar_height,
-                color=green_shades[idx], label=f"#{idx+1} - {sorted_names[idx]}", alpha=0.9)
-
-
-def plot_top_labels(ax, y_pos, attributes, ylim, top_k):
-    ax.set_title(f"Top {top_k} Scenarios Attribute Scores", fontsize=14, pad=15)
-    ax.axvline(0, color='#333333', linestyle='-', linewidth=1.5)
-    ax.set_yticks(y_pos)
-    ax.set_yticklabels(attributes, fontsize=10)
-    ax.yaxis.tick_right()
-    ax.yaxis.set_label_position("right")
-    ax.invert_yaxis()
-    ax.set_xlim([-ylim, ylim])
-    ax.set_xlabel("Score Contribution ", fontsize=11)
-    ax.grid(axis='x', alpha=0.5)
-    ax.legend(loc='center', bbox_to_anchor=(0.5, -0.2))
 
 
 def plot_radar(n, control_name, control_scores, current_name, current_scores, attributes, ylim):
-    fig, ax_radar = plt.subplots(figsize=(5,5), subplot_kw=dict(polar=True))
+    fig, ax_radar = plt.subplots(figsize=(3.5,3.5), subplot_kw=dict(polar=True))
     angles = np.linspace(0, 2 * np.pi, n, endpoint=False).tolist()
     angles += angles[:1]
     control_radar_vals = control_scores.tolist() + [control_scores[0]]
@@ -209,8 +169,7 @@ def plot_radar(n, control_name, control_scores, current_name, current_scores, at
     ax_radar.set_xticklabels(attributes, fontsize=8)
     ax_radar.set_yticks([-ylim, -ylim/2.0, 0.0, ylim/2.0, ylim])
     ax_radar.set_yticklabels(["", "", "(Control)", "", ""])
-    ax_radar.legend(loc='center', bbox_to_anchor=(0.5, -0.2))
-    fig.suptitle(f"Performance Profile", fontsize=14, fontweight='bold', y=1.02)
+    ax_radar.legend(loc='center', bbox_to_anchor=(0.5, -0.12), fontsize=7, frameon=False)
     png_file = f"{current_name.replace(':', '')} - Radar.png"
     plt.savefig(f"{PNG_DIR}/{png_file}", bbox_inches='tight')
     plt.close()
@@ -235,12 +194,12 @@ def plot_scores(scenario_scores):
 
 
 def plot_score_labels(max_score):
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(4.8, 2.5))
     plt.ylim(-max_score * 1.5, max_score * 1.5)
     plt.ylabel('Score', fontweight='bold')
     plt.xlabel('Scenario', fontweight='bold')
     plt.title('Weighted Scenario Scores', fontsize=14)
-    plt.xticks(rotation=45, ha='right')
+    plt.xticks(rotation=30, ha='right')
 
 
 def plot_score_bars(scenarios, scores, max_score):
@@ -273,12 +232,11 @@ def plot_weights(attributes, weights):
 
 
 def plot_weight_labels(ylim):
-    plt.figure(figsize=(7,4))
+    plt.figure(figsize=(4.8,2.2))
     plt.xlabel('Attribute', fontweight='bold')
     plt.ylabel('Weight', fontweight='bold')
-    plt.ylim(0, 0.25)
-    plt.title('Weight Distribution', fontsize=14)
-    plt.xticks(rotation=45, ha='right')
+    plt.ylim(0, 0.22)
+    plt.xticks(rotation=30, ha='right')
 
 
 def plot_weight_bars(attributes, weights, max_weight):
@@ -296,6 +254,15 @@ def plot_weight_bars(attributes, weights, max_weight):
         plt.text(bar.get_x() + bar.get_width()/2, yval + text_offset,
                  f"{yval:.4f}", va='bottom', ha='center', fontsize=9)
     plt.tight_layout()
+
+def apply_lncs_formatting():
+    plt.rcParams.update({
+        'font.size': 9,
+        'axes.labelsize': 9,
+        'xtick.labelsize': 8,
+        'ytick.labelsize': 8,
+        'figure.titlesize': 10
+    })
 
 
 def init_analyze():
