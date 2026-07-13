@@ -123,7 +123,7 @@ def plot_scenario_charts(scenarios, A, attributes, show_plots=False):
         plot_radar(n, control_name, control_scores, current_name, current_scores, attributes, ylim)
 
         # Tornado chart
-        fig, ax_bar = plt.subplots(figsize=(HEIGHT * 1.1, HEIGHT * 1.1))
+        fig, ax_bar = plt.subplots(figsize=(HEIGHT * 0.6, HEIGHT * 0.75))
         plt.title(current_name, fontsize=LABEL_SIZE)
         bar_colors = [cmap_diverging(norm(score)) for score in current_scores]
         y_pos_bar = np.arange(n)
@@ -143,7 +143,7 @@ def plot_scenario_charts(scenarios, A, attributes, show_plots=False):
     logger.debug("\t✔️ Finished generating prioritized passports")
 
 def plot_tornado_labels(ax_bar, ylim, current_name, current_scores, bar_colors, y_pos_bar):
-    ax_bar.barh(y_pos_bar, current_scores, align='center', color=bar_colors, edgecolor=EDGE_COLOR, linewidth=0.25, alpha=0.9, height=0.75)
+    ax_bar.barh(y_pos_bar, current_scores, align='center', color=bar_colors, edgecolor=EDGE_COLOR, linewidth=0.25, alpha=0.9, height=BAR_HEIGHT * 0.6)
     ax_bar.axvline(0, color=AX_COLOR, linestyle='-', linewidth=LINE_WIDTH*2)
     ax_bar.set_yticks([])
     ax_bar.set_yticklabels([])
@@ -181,8 +181,8 @@ Top 3 Scenarios
 def plot_top_scores(sorted_scores, sorted_names, attributes, ylim, show_plots):
     m_test, n = sorted_scores.shape
     top_k = min(3, m_test)
-    fig, ax = plt.subplots(figsize=(4,7))
-    y_pos = np.arange(n)
+    fig, ax = plt.subplots(figsize=(HEIGHT * 0.80, HEIGHT * 1.4))
+    y_pos = np.arange(n) * 2.5
 
     plot_top_bars(ax, top_k, sorted_scores, sorted_names, y_pos)
     plot_top_labels(ax, y_pos, attributes, ylim, top_k)
@@ -194,12 +194,14 @@ def plot_top_scores(sorted_scores, sorted_names, attributes, ylim, show_plots):
 
 
 def plot_top_bars(ax, top_k, sorted_scores, sorted_names, y_pos):
-    bar_height = BAR_HEIGHT / 3
+    ylim = 0.1
+    bar_height = 0.65
     green_shades = [plt.cm.Greens(val) for val in np.linspace(0.9, 0.5, top_k)]
     for idx in range(top_k):
         offset = (idx - (top_k - 1) / 2) * bar_height
-        ax.barh(y_pos + offset, sorted_scores[idx], bar_height,
+        bars = ax.barh(y_pos + offset, sorted_scores[idx], bar_height,
                 color=green_shades[idx], label=f"#{idx+1} - {sorted_names[idx]}", alpha=0.9)
+        draw_bar_values(ax, bars, ylim)
 
 
 def plot_top_labels(ax, y_pos, attributes, ylim, top_k):
@@ -213,26 +215,30 @@ def plot_top_labels(ax, y_pos, attributes, ylim, top_k):
     ax.set_xlim([-ylim, ylim])
     ax.set_xlabel("Score", fontsize=LABEL_SIZE)
     ax.grid(axis='x', alpha=GRID_ALPHA)
-    ax.legend(loc='center', bbox_to_anchor=ANCHOR)
+    ax.legend(loc='center', bbox_to_anchor=(0.5, -0.2))
 
 
 def draw_bar_values(ax, bars, ylim):
     padding = ylim * PADDING
-
     for bar in bars:
         width = bar.get_width()
         y_coord = bar.get_y() + bar.get_height() / 2
-        if width >= 0:
+        text_color = "black"
+        font_weight = "normal"
+        if width > 0.15:
+            x_coord = width * 0.6
+            alignment = 'left'
+            text_color = "white"
+            font_weight = "semibold"
+        elif width >= 0:
             x_coord = width + padding
             alignment = 'left'
         else:
             x_coord = width - padding
             alignment = 'right'
-        # Draw the value text next to the bar
-        text_color = "white" if abs(width) > 0.49 else "black"
         ax.text(x_coord, y_coord, f"{width:.3f}",
                 va='center', ha=alignment,
-                fontsize=VALUE_SIZE,
+                fontsize=VALUE_SIZE, fontweight=font_weight,
                 color=text_color)
 
 
