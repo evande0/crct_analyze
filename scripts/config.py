@@ -169,6 +169,27 @@ TARGET_STEP_SIZE = 0.05
 NON_TARGET_STEP_SIZE = TARGET_STEP_SIZE / (len(ATTRIBUTES_LIST) - 1)
 ''''''
 
+'''
+Visualisations
+'''
+WIDTH = 7.2
+HEIGHT = 4.5
+TITLE_SIZE = 13
+LABEL_SIZE = 12
+TICK_SIZE = 11
+VALUE_SIZE = 10
+ROTATION = 30
+BAR_HEIGHT = 1.0
+LINE_WIDTH = 0.25
+GRID_ALPHA = 0.5
+BAR_ALPHA = 0.9
+PADDING = 0.05
+ANCHOR = (0.5, -0.15)
+EDGE_COLOR = '#555555'
+AX_COLOR = '#333333'
+VALUE_DARK = '#222222'
+VALUE_LIGHT = '#FFFFFF'
+
 
 # Help Strings
 PROG_NAME = "crct_data_pipeline"
@@ -180,7 +201,7 @@ HELP_SORTTYPE = "0: Sort by scenario name. 1: Sort by score ascending. 2: Sort b
 HELP_VERBOSE = "Print INFO logs to console"
 HELP_DEBUG = "Print DEBUG logs to console"
 HELP_QUIET = "Suppress all but CRITICAL logs from printing to console"
-HELP_SHOWRADAR = "Display radar charts in addition to saving them as PNGs"
+HELP_SHOW = "Display visualisations in addition to saving them as PNGs"
 HELP_WEIGHTS = "Specify the name of the weights to use (DEFAULT, FLAT, CUSTOM1, CUSTOM2). Example: -w CUSTOM1"
-
+HELP_COMPACT = "Compact visualisations without titles, compatible with LNCS format"
 

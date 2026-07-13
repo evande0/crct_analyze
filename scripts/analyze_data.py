@@ -8,27 +8,10 @@ import matplotlib.colors as mcolors
 from config import *
 from utils import *
 
-WIDTH = 4.8 * 1.5
-HEIGHT = 3.0 * 1.5
-TITLE_SIZE = 13
-LABEL_SIZE = 12
-TICK_SIZE = 11
-VALUE_SIZE = 10
-ROTATION = 30
-BAR_HEIGHT = 1.0
-LINE_WIDTH = 0.25
-GRID_ALPHA = 0.5
-BAR_ALPHA = 0.9
-PADDING = 0.02
-ANCHOR = (0.5, -0.15)
-EDGE_COLOR = '#555555'
-AX_COLOR = '#333333'
-VALUE_DARK = '#222222'
-VALUE_LIGHT = '#FFFFFF'
 
 logger = None
 
-def analyze_data(showradar):
+def analyze_data(show, compact):
     # Load data from Process stage
     scenarios, A_norm = get_attributes_norm(with_names=True)
     weighted_attributes = get_weighted_attributes(with_names=False)
@@ -37,40 +20,49 @@ def analyze_data(showradar):
     weighted_attributes = np.array(weighted_attributes)
 
     # Plot heat map of normalised performance scores
-    apply_lncs_formatting()
-    generate_perf_heatmap(A_norm[1:], scenarios[1:], config.ATTRIBUTES_LIST, "norm_heatmap.png" )
+    generate_perf_heatmap(A_norm[1:], scenarios[1:], config.ATTRIBUTES_LIST, show, compact, "heatmap.png")
 
     # Plot weights & scores
-    plot_weights(config.ATTRIBUTES_LIST, get_weights())
-    plot_scores(sorted_scenario_scores)
+    plot_weights(config.ATTRIBUTES_LIST, get_weights(), show, compact)
+    plot_scores(sorted_scenario_scores, show, compact)
 
     # Radar & tornado chart analysis
-    plot_scenario_charts(scenarios, weighted_attributes, config.ATTRIBUTES_LIST, False)
+    plot_scenario_charts(scenarios, weighted_attributes, config.ATTRIBUTES_LIST, show, compact)
 
     logger.warning(f"✅ Analysis complete.")
+
+def save_png(filename, compact):
+    save_path = os.path.join(config.PNG_DIR, filename)
+    pad = PADDING if compact else HEIGHT * 0.15
+    plt.savefig(save_path, dpi=400, bbox_inches='tight', pad_inches = pad)
+
 
 """
 Heat Map
 """
 
-def generate_perf_heatmap(A, scenario_names, attribute_names, filename="heatmap.png"):
+def generate_perf_heatmap(A, scenario_names, attribute_names, show, compact, filename="heatmap.png"):
     if A.shape != (len(scenario_names), len(attribute_names)):
         raise ValueError(f"Matrix shape ({A.shape}) does not match provided labels: "
                          f"({len(scenario_names)}x{len(attribute_names)}).")
+    scale_x = 1.0 if compact else 1.3
+    scale_y = 0.9 if compact else 1.2
 
-    fig, ax = plt.subplots(figsize=(WIDTH, HEIGHT * 0.9))
+    fig, ax = plt.subplots(figsize=(WIDTH * scale_x, HEIGHT * scale_y))
     cax = ax.imshow(A, cmap='coolwarm_r', vmin=-1, vmax=1, aspect='auto')
 
-    plot_heatmap_labels(fig, ax, cax, scenario_names, attribute_names)
+    plot_heatmap_labels(fig, ax, cax, scenario_names, attribute_names, compact)
     plot_heatmap_values(A, ax)
 
     fig.tight_layout(pad=PADDING)
-    save_path = os.path.join(config.PNG_DIR, filename)
-    plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    save_png(filename, compact)
+    if show: plt.show()
     plt.close(fig)
 
 
-def plot_heatmap_labels(fig, ax, cax, scenario_names, attribute_names):
+def plot_heatmap_labels(fig, ax, cax, scenario_names, attribute_names, compact):
+    if not compact:
+        ax.set_title("Normalised Performance Values", fontsize=TITLE_SIZE, pad=TITLE_SIZE, weight='bold')
     short_names = [f"Scenario {i+1}" for i in range(len(scenario_names))]
     ax.set_xlabel("Attributes", fontsize=LABEL_SIZE, fontweight="bold", labelpad=10)
     ax.set_xticks(np.arange(len(attribute_names)))
@@ -99,7 +91,7 @@ def plot_heatmap_values(A, ax):
 """
 Scenario Charts
 """
-def plot_scenario_charts(scenarios, A, attributes, show_plots=False):
+def plot_scenario_charts(scenarios, A, attributes, show, compact):
     logger.debug("\n⏳ Sorting scenarios and generating visualizations")
     control_name = scenarios[0]
     control_scores = A[0]
@@ -113,16 +105,18 @@ def plot_scenario_charts(scenarios, A, attributes, show_plots=False):
 
     m_active, n = sorted_scores.shape
     ylim = np.round(max(config.WEIGHTS), 3)
-    plot_top_scores(sorted_scores, sorted_names, attributes, ylim, show_plots)
+    plot_top_scores(sorted_scores, sorted_names, attributes, ylim, show, compact)
     norm = mcolors.Normalize(vmin=-ylim*1.1, vmax=ylim*1.1)
     cmap_diverging = plt.cm.get_cmap('coolwarm_r')
 
     for i in range(m_active):
         current_name = active_names[i]
         current_scores = active_scores[i].tolist()
-        plot_radar(n, control_name, control_scores, current_name, current_scores, attributes, ylim)
 
-        # Tornado chart
+        # Radar Chart
+        plot_radar(n, control_name, control_scores, current_name, current_scores, attributes, ylim, show, compact)
+
+        # Tornado Chart
         fig, ax_bar = plt.subplots(figsize=(HEIGHT * 0.6, HEIGHT * 0.75))
         plt.title(current_name, fontsize=LABEL_SIZE)
         bar_colors = [cmap_diverging(norm(score)) for score in current_scores]
@@ -135,9 +129,9 @@ def plot_scenario_charts(scenarios, A, attributes, show_plots=False):
         for spine in ['top', 'right', 'left']:
             ax_bar.spines[spine].set_visible(False)
 
-        png_file = f"{current_name.replace(':', '')} - Tornado.png"
-        plt.savefig(f"{PNG_DIR}/{png_file}", bbox_inches='tight')
-        if show_plots: plt.show()
+        filename = f"{current_name.replace(':', '')} - Tornado.png"
+        save_png(filename, compact)
+        if show: plt.show()
         plt.close()
 
     logger.debug("\t✔️ Finished generating prioritized passports")
@@ -178,7 +172,7 @@ def place_tornado_values(ax_bar, idx, attr, score, ylim, text_padding):
 """
 Top 3 Scenarios
 """
-def plot_top_scores(sorted_scores, sorted_names, attributes, ylim, show_plots):
+def plot_top_scores(sorted_scores, sorted_names, attributes, ylim, show, compact):
     m_test, n = sorted_scores.shape
     top_k = min(3, m_test)
     fig, ax = plt.subplots(figsize=(HEIGHT * 0.80, HEIGHT * 1.4))
@@ -186,10 +180,8 @@ def plot_top_scores(sorted_scores, sorted_names, attributes, ylim, show_plots):
 
     plot_top_bars(ax, top_k, sorted_scores, sorted_names, y_pos)
     plot_top_labels(ax, y_pos, attributes, ylim, top_k)
-
-    plt.savefig(f"{PNG_DIR}/Top_Scenarios.png", bbox_inches='tight')
-    if show_plots:
-        plt.show()
+    save_png("Top3_Scenarios.png", compact)
+    if show: plt.show()
     plt.close()
 
 
@@ -229,7 +221,6 @@ def draw_bar_values(ax, bars, ylim):
             x_coord = width * 0.6
             alignment = 'left'
             text_color = "white"
-            font_weight = "semibold"
         elif width >= 0:
             x_coord = width + padding
             alignment = 'left'
@@ -244,7 +235,7 @@ def draw_bar_values(ax, bars, ylim):
 
 # RADAR
 
-def plot_radar(n, control_name, control_scores, current_name, current_scores, attributes, ylim):
+def plot_radar(n, control_name, control_scores, current_name, current_scores, attributes, ylim, show, compact):
     fig, ax_radar = plt.subplots(figsize=(HEIGHT * 1.1 ,HEIGHT * 1.1), subplot_kw=dict(polar=True))
     angles = np.linspace(0, 2 * np.pi, n, endpoint=False).tolist()
     angles += angles[:1]
@@ -260,15 +251,15 @@ def plot_radar(n, control_name, control_scores, current_name, current_scores, at
     ax_radar.set_yticks([-ylim, -ylim/2.0, 0.0, ylim/2.0, ylim])
     ax_radar.set_yticklabels(["", "", "(Control)", "", ""])
     ax_radar.legend(loc='center', bbox_to_anchor=ANCHOR, fontsize=VALUE_SIZE, frameon=False)
-    png_file = f"{current_name.replace(':', '')} - Radar.png"
-    plt.savefig(f"{PNG_DIR}/{png_file}", bbox_inches='tight')
+    filename = f"{current_name.replace(':', '')} - Radar.png"
+    save_png(filename, compact)
     plt.close()
 
 
 """
 Weights & Scores
 """
-def plot_scores(scenario_scores):
+def plot_scores(scenario_scores, show, compact):
     logger.debug("\n⏳ Generating scenario score bar chart...")
     try:
         scenarios, scores = zip(*scenario_scores)
@@ -278,8 +269,7 @@ def plot_scores(scenario_scores):
 
         plot_score_labels(max_score)
         plot_score_bars(short_names[1:], scores[1:], max_score)
-        save_png("Scenario Scores", PNG_DIR)
-
+        save_png("Weighted Scenario Scores.png", compact)
         plt.close()
     except Exception as e:
         logger.error(f"Failed to generate plot: {e}", exc_info=True)
@@ -310,13 +300,13 @@ def plot_score_bars(scenarios, scores, max_score):
     plt.tight_layout()
 
 
-def plot_weights(attributes, weights):
+def plot_weights(attributes, weights, show, compact):
     logger.debug("\n⏳ Plotting weights distribution...")
     try:
         max_weight = (np.max(weights)) * 1.1
         plot_weight_labels(min(1, max_weight))
         plot_weight_bars(attributes, weights, max_weight)
-        save_png("Weights", PNG_DIR)
+        save_png("Weight Distribution.png", compact)
         plt.close()
     except Exception as e:
         logger.error(f"Failed to generate plot: {e}", exc_info=True)
@@ -345,15 +335,6 @@ def plot_weight_bars(attributes, weights, max_weight):
         plt.text(bar.get_x() + bar.get_width()/2, yval + text_offset,
                  f"{yval:.3f}", va='bottom', ha='center', fontsize=VALUE_SIZE)
     plt.tight_layout()
-
-def apply_lncs_formatting():
-    plt.rcParams.update({
-        'font.size': VALUE_SIZE,
-        'axes.labelsize': LABEL_SIZE,
-        'xtick.labelsize': TICK_SIZE,
-        'ytick.labelsize': TICK_SIZE,
-        'figure.titlesize': TITLE_SIZE
-    })
 
 
 def init_analyze():
