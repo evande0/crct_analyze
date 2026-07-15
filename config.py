@@ -4,7 +4,6 @@ from pathlib import Path
 import yaml
 import numpy as np
 
-
 # Project JSON field map
 FIELD_MAP = {
         "Name": ("properties", "name"),
@@ -36,8 +35,6 @@ ATTRIBUTES_LIST = [
     "AdsorbingPollutants",
 ]
 
-BASE_DIR = Path(__file__).resolve().parent
-
 # Load user config
 with open("config.yaml", "r") as f:
     _user_config = yaml.safe_load(f)
@@ -62,6 +59,7 @@ LOG_MAX_WARN_THRESHOLD = _user_config["logger"]["max_warn_threshold"]
 
 
 # Directories
+BASE_DIR = Path(__file__).resolve().parent
 TIMESTAMP = datetime.now().strftime('%Y-%m-%d_%H%M%S')
 SAVE_DIR = BASE_DIR / "results" / TIMESTAMP
 RAW_DIR = SAVE_DIR / "raw"
@@ -79,7 +77,6 @@ LOG_FILEPATH = LOG_DIR / "pipeline.log"
 LOGGER_NAME = "DataPipeline"
 LOG_FILE_FORMAT = "%(asctime)s [%(levelname)s] %(filename)s:%(lineno)d (%(funcName)s): %(message)s"
 LOG_CONSOLE_FORMAT = "[%(levelname)s] %(filename)s, %(lineno)d: %(message)s"
-
 
 
 # Viz Defaults
@@ -114,60 +111,3 @@ HELP_QUIET = "Suppress all but CRITICAL logs from printing to console"
 HELP_SENSITIVITY = "Run sensitivity analysis"
 HELP_WEIGHTS = "Specify the name of the weights to use. DEFAULT, FLAT, CUSTOM1, CUSTOM2 are customizable in 'config.yaml'. Example: -w CUSTOM1"
 HELP_COMPACT = "Compact visualisations without titles"
-
-
-# import numpy as np
-# from datetime import datetime
-# from pathlib import Path
-# from enum import Enum
-#
-# '''
-# ------------------------------------------
-# #   Project Configuration - Edit me!
-# ------------------------------------------
-# '''
-#
-# '''
-# Folder containing CRCT project JSON files
-# '''
-# PROJ_DIR = "data/project_json"
-# PARENT_DIR = Path(PROJ_DIR).parent.parent # Folder for results will be created here
-#
-# '''
-# Directories for saved results
-# '''
-# TIMESTAMP = datetime.now().strftime('%Y-%m-%d_%H%M%S')
-# SAVE_DIR = f"{PARENT_DIR}/results/{TIMESTAMP}"
-# RAW_DIR = f"{SAVE_DIR}/raw"
-# PROCESSED_DIR = f"{SAVE_DIR}/processed"
-# PNG_DIR = f"{SAVE_DIR}/png_results"
-# SENS_DIR = f"{SAVE_DIR}/sensitivity"
-# SENS_FILEPATH = f"{SENS_DIR}/sensitivity_summary.csv"
-# TOTALS_FILENAME = f"scenario_totals_{TIMESTAMP}.csv"
-# TOTALS_FILEPATH = f"{RAW_DIR}/{TOTALS_FILENAME}"
-#
-# '''
-# Logger
-# '''
-# LOG_DIR = f"{PARENT_DIR}/logs"
-# LOGGER_NAME = "DataPipeline"
-# LOG_FILE = f"{LOG_DIR}/DataPipeline.log"
-# LOG_FILE_FORMAT = "%(asctime)s [%(levelname)s] %(filename)s:%(lineno)d (%(funcName)s): %(message)s"
-# LOG_CONSOLE_FORMAT = "%(message)s"
-#
-# # Logs will rotate after 2MB. Set to 0 to disable log rotation.
-# LOG_MAX_SIZE_BYTES = 2 * 1024 * 1024
-#
-# # After reaching max backup log files, the oldest logs will be overwritten
-# LOG_MAX_BACKUPS = 100
-#
-# # Num backup files before user is warned. Set to -1 to disable checking.
-# LOG_MAX_WARN_THRESHOLD = 97
-#
-#
-#
-# WeightsIndex = Enum('Weights', [('DEFAULT', 0), ('FLAT', 1), ('CUSTOM1', 2), ('CUSTOM2', 3)])
-# WEIGHTS_OPTS = [DEFAULT, FLAT, CUSTOM1, CUSTOM2]
-
-
-
