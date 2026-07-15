@@ -3,12 +3,13 @@ import os
 import argparse
 import numpy as np
 from datetime import datetime
-import matplotlib.pyplot as plt
+import matplotlib as mpl
 import matplotlib.colors as mcolors
+import matplotlib.pyplot as plt
 from config import *
-from utils import *
+from src.utils import *
 
-
+CMAP = mpl.colormaps[config.COLOR_MAP]
 logger = None
 
 def analyze_data(show, compact):
@@ -23,7 +24,7 @@ def analyze_data(show, compact):
     generate_perf_heatmap(A_norm[1:], scenarios[1:], config.ATTRIBUTES_LIST, show, compact, "heatmap.png")
 
     # Plot weights & scores
-    plot_weights(config.ATTRIBUTES_LIST, get_weights(), show, compact)
+    plot_weights(config.ATTRIBUTES_LIST, config.WEIGHTS, show, compact)
     plot_scores(sorted_scenario_scores, show, compact)
 
     # Radar & tornado chart analysis
@@ -107,7 +108,6 @@ def plot_scenario_charts(scenarios, A, attributes, show, compact):
     ylim = np.round(max(config.WEIGHTS), 3)
     plot_top_scores(sorted_scores, sorted_names, attributes, ylim, show, compact)
     norm = mcolors.Normalize(vmin=-ylim*1.1, vmax=ylim*1.1)
-    cmap_diverging = plt.cm.get_cmap('coolwarm_r')
 
     for i in range(m_active):
         current_name = active_names[i]
@@ -119,7 +119,7 @@ def plot_scenario_charts(scenarios, A, attributes, show, compact):
         # Tornado Chart
         fig, ax_bar = plt.subplots(figsize=(HEIGHT * 0.6, HEIGHT * 0.75))
         plt.title(current_name, fontsize=LABEL_SIZE)
-        bar_colors = [cmap_diverging(norm(score)) for score in current_scores]
+        bar_colors = [CMAP(norm(score)) for score in current_scores]
         y_pos_bar = np.arange(n)
         plot_tornado_labels(ax_bar, ylim, current_name, current_scores, bar_colors, y_pos_bar)
         text_padding = ylim * 0.05
@@ -263,12 +263,12 @@ def plot_scores(scenario_scores, show, compact):
     logger.debug("\n⏳ Generating scenario score bar chart...")
     try:
         scenarios, scores = zip(*scenario_scores)
-        short_names = [f"Scenario {i}" for i in range(len(scenarios))]
+        short_names = [name.split(':')[0] for name in scenarios]
         max_score = max(abs(s) for s in scores)
         max_weight = max(abs(w) for w in config.WEIGHTS)
 
         plot_score_labels(max_score)
-        plot_score_bars(short_names[1:], scores[1:], max_score)
+        plot_score_bars(short_names, scores, max_score)
         save_png("Weighted Scenario Scores.png", compact)
         plt.close()
     except Exception as e:
@@ -285,8 +285,7 @@ def plot_score_labels(max_score):
 
 def plot_score_bars(scenarios, scores, max_score):
     norm = mcolors.Normalize(vmin=-max_score * 1.5, vmax=max_score * 1.5)
-    cmap_scores = plt.cm.get_cmap('coolwarm_r')
-    bar_colors = [cmap_scores(norm(score)) for score in scores]
+    bar_colors = [CMAP(norm(score)) for score in scores]
     short_names = scenarios
     bars = plt.bar(short_names, scores, color=bar_colors, edgecolor=EDGE_COLOR, linewidth=LINE_WIDTH, alpha=BAR_ALPHA)
     plt.axhline(0, color=AX_COLOR, linestyle='-', linewidth=LINE_WIDTH)
@@ -322,10 +321,8 @@ def plot_weight_labels(ylim):
 
 def plot_weight_bars(attributes, weights, max_weight):
     norm_weights = mcolors.Normalize(vmin=-max_weight * 0.2, vmax=max_weight*1.2)
-    cmap_weights = plt.cm.get_cmap('coolwarm_r')
-
-    bar_colors = [cmap_weights(norm_weights(w)) for w in weights]
-    dark_edge = cmap_weights(0.9)
+    bar_colors = [CMAP(norm_weights(w)) for w in weights]
+    dark_edge = CMAP(0.9)
 
     bars = plt.bar(attributes, weights, color=bar_colors, edgecolor=dark_edge, linewidth=LINE_WIDTH, alpha=BAR_ALPHA)
 

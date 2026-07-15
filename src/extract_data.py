@@ -8,7 +8,7 @@ from config import *
 import glob
 from pathlib import Path
 import itertools
-import utils
+import src.utils as utils
 
 
 logger = None
@@ -133,11 +133,11 @@ def extract_data_from_json(data):
     return rows
 
 def append_to_totals_csv(totals):
-    logger.debug(f"⏳Appending totals to {TOTALS_FILENAME}...")
+    logger.debug(f"⏳Appending totals to {TOTALS_FILEPATH}...")
     with open(TOTALS_FILEPATH, "a", newline="", encoding="utf-8") as savetotals:
         writer = csv.DictWriter(savetotals, fieldnames=HEADERS)
         writer.writerow(totals)
-    logger.info(f"\t✔️  Appended scenario totals to {TOTALS_FILENAME}")
+    logger.info(f"\t✔️  Appended scenario totals to {TOTALS_FILEPATH}")
 
 def save_extracted_to_config(files_data, names, raw_attributes):
     utils.set_raw_files_data(files_data)

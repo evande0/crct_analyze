@@ -1,4 +1,4 @@
-import config
+import config as config
 import csv
 import glob
 import json
@@ -139,13 +139,13 @@ def get_raw_attributes():
 
 """ Normalized data """
 def set_attributes_norm(A, scenarios):
-    config.logger.error(f"\t Settign attributes norm: {A}, shape: {A.shape}")
+    config.logger.debug(f"\t Setting attributes norm: {A}, shape: {A.shape}")
     sorted_norm = sorted(
         zip(scenarios, A),
         key=lambda x: x[0]
     )
     config.attributes_norm = sorted_norm
-    config.logger.error(f"\t✔️  Set attributes_norm: {sorted_norm}")
+    config.logger.debug(f"\t✔️  Set attributes_norm: {sorted_norm}")
 
 def get_attributes_norm(with_names=False):
     scenarios, A_norm = zip(*config.attributes_norm)
@@ -183,10 +183,12 @@ def get_sorted_scenario_scores():
     return config.sorted_scenario_scores
 
 """ Weights """
-def set_weights(weights_name):
-    weights_idx = config.WeightsIndex[weights_name].value
-    config.WEIGHTS = config.WEIGHTS_OPTS[weights_idx]
-    config.logger.debug(f"\t✔️  Set WEIGHTS: {get_weights()}")
+def set_weights(weight_arg):
+    if weight_arg != config.WEIGHT_SCHEME:
+        config.WEIGHTS = config.WEIGHT_OPTS.get(weight_arg, WEIGHT_OPTS["DEFAULT"])
+        config.logger.debug(f"\t✔️  Set WEIGHTS: {get_weights()}")
+    else:
+        config.logger.debug(f"Using weight scheme defined in config.yaml: {config.WEIGHT_SCHEME}")
 
 def get_weights():
     return config.WEIGHTS
@@ -198,8 +200,8 @@ def create_dirs(sens=False,proj=True, save=True, log=True, raw=True, processed=T
     config.logger.debug("Creating directories for pipeline artifacts...")
 
     if proj:
-        os.makedirs(config.PROJ_DIR, exist_ok=True)
-        config.logger.debug(f"\t✔️  Project directory: {config.PROJ_DIR}")
+        os.makedirs(config.JSON_DIR, exist_ok=True)
+        config.logger.debug(f"\t✔️  Project directory: {config.JSON_DIR}")
     if save:
         os.makedirs(config.SAVE_DIR, exist_ok=True)
         config.logger.debug(f"\t✔️  Save directory: {config.SAVE_DIR}")
@@ -340,23 +342,24 @@ def save_png(file_name, save_dir):
     Validation utils
 -------------------------"""
 
-def validate_filepath(filepath, expected_type):
-    if not filepath.lower().endswith(expected_type):
-        config.logger.error(f"...ERROR: Specified filepath is not a {expected_type}.")
-        raise TypeError("Specified filepath is not a {expected_type}.")
-    if not os.path.exists(filepath):
-        config.logger.error(f"....ERROR: File '{filepath}' does not exist.")
-        raise ValueError("File '{filepath}' does not exist.")
+def validate_filepath(filepath: Path, expected_type: str) -> bool:
+    filepath = Path(filepath)
+    actual_type = filepath.suffix.lower()
+    if actual_type != expected_type.lower():
+        error_msg = f"Expected file type {expected_type} but received {actual_type}"
+        raise TypeError(error_msg)
+    if not filepath.is_file():
+        error_msg = f"File '{filepath}' does not exist or is a directory."
+        raise ValueError(error_msg)
     return True
 
 def has_totals_csv():
     config.logger.debug("Checking if totals CSV is available")
     try:
-        return validate_filepath(config.TOTALS_FILEPATH, "csv")
+        return validate_filepath(config.TOTALS_FILEPATH, ".csv")
     except ValueError as e:
         config.logger.debug("No saved data available")
         return False
-
 
 def validate_crct_json(json):
     if "areas" not in json or not isinstance(json["areas"], list):

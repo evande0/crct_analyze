@@ -1,0 +1,625 @@
+{
+  "areas": [
+    {
+      "id": "cdb55e9c3a49b034d702baf16feb935c",
+      "type": "Feature",
+      "properties": {
+        "name": "Remove house",
+        "hidden": false,
+        "apiData": {
+          "constructionCost": 3511.206077973296,
+          "maintenanceCost": 127.80790123822798,
+          "coolSpot": 0,
+          "tempReduction": 0.3613218296690933,
+          "captureUnit": 10.142367148606128,
+          "filteringUnit": 11.410163042181894,
+          "settlingUnit": 11.410163042181894,
+          "Fmeas_area": 153.72918654586007,
+          "groundwater_recharge": 29.491468076359467,
+          "evapotranspiration": 91.97859207892182,
+          "storageCapacity": 8.705469614809825
+        },
+        "measure": "91",
+        "color": "#47cd49",
+        "defaultInflow": 1,
+        "defaultDepth": 0.075,
+        "defaultWidth": 1,
+        "defaultRadius": 0.0001,
+        "areaInflow": null,
+        "areaDepth": "0.075",
+        "areaWidth": null,
+        "areaRadius": null
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              174.54794160217887,
+              -36.76987989138054
+            ],
+            [
+              174.54801680418728,
+              -36.76983973118233
+            ],
+            [
+              174.54810357573626,
+              -36.769945280375055
+            ],
+            [
+              174.54802901647895,
+              -36.7699890446315
+            ],
+            [
+              174.54794160217887,
+              -36.76987989138054
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      }
+    },
+    {
+      "id": "1695cacac2c19319f55032907de06378",
+      "type": "Feature",
+      "properties": {
+        "name": "Remove garage",
+        "hidden": false,
+        "apiData": {
+          "constructionCost": 750.2681181660394,
+          "maintenanceCost": 27.309759501243835,
+          "coolSpot": 0,
+          "tempReduction": 0.07720659032198296,
+          "captureUnit": 2.167202535353908,
+          "filteringUnit": 2.438102852273146,
+          "settlingUnit": 2.438102852273146,
+          "Fmeas_area": 32.84857252341417,
+          "groundwater_recharge": 6.301683172175325,
+          "evapotranspiration": 19.65381799249075,
+          "storageCapacity": 0.496045036803993
+        },
+        "measure": "91",
+        "color": "#47cd49",
+        "defaultInflow": 1,
+        "defaultDepth": 0.075,
+        "defaultWidth": 1,
+        "defaultRadius": 0.0001,
+        "areaInflow": 1,
+        "areaDepth": "0.02",
+        "areaWidth": null,
+        "areaRadius": null,
+        "area": 23.98755508332828
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              174.54807850840024,
+              -36.769912843321656
+            ],
+            [
+              174.54811707353383,
+              -36.76989379298195
+            ],
+            [
+              174.54815628141824,
+              -36.7699375572686
+            ],
+            [
+              174.54811578802793,
+              -36.76995763734428
+            ],
+            [
+              174.54807850840024,
+              -36.769912843321656
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      }
+    },
+    {
+      "id": "d19304945d6af3ab13ce6cc7f8a757e1",
+      "type": "Feature",
+      "properties": {
+        "name": "Remove concrete",
+        "hidden": false,
+        "apiData": {
+          "constructionCost": 338.96167949625925,
+          "maintenanceCost": 12.338205133663838,
+          "coolSpot": 0,
+          "tempReduction": 0.034880964404684155,
+          "captureUnit": 0.9791147903069236,
+          "filteringUnit": 1.101504139095289,
+          "settlingUnit": 1.101504139095289,
+          "Fmeas_area": 14.840571046532226,
+          "groundwater_recharge": 2.847021031514957,
+          "evapotranspiration": 8.879347254595913,
+          "storageCapacity": 0.8404008582551883
+        },
+        "measure": "91",
+        "color": "#47cd49",
+        "defaultInflow": 1,
+        "defaultDepth": 0.075,
+        "defaultWidth": 1,
+        "defaultRadius": 0.0001,
+        "areaInflow": null,
+        "areaDepth": "0.075",
+        "areaWidth": null,
+        "areaRadius": null,
+        "area": 10.247749480731692
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              174.54808300766473,
+              -36.76996896456402
+            ],
+            [
+              174.548088792435,
+              -36.76996587532216
+            ],
+            [
+              174.54809457720535,
+              -36.76996587532216
+            ],
+            [
+              174.54810100472662,
+              -36.76996587532216
+            ],
+            [
+              174.54810871775368,
+              -36.76997050918572
+            ],
+            [
+              174.54811643077898,
+              -36.769976687668134
+            ],
+            [
+              174.54811578802793,
+              -36.769984925643904
+            ],
+            [
+              174.54811128876133,
+              -36.769992648745685
+            ],
+            [
+              174.54810036197568,
+              -36.76999779747996
+            ],
+            [
+              174.548088792435,
+              -36.76999779747996
+            ],
+            [
+              174.54808043665696,
+              -36.7699952231132
+            ],
+            [
+              174.54807465188662,
+              -36.769991618999214
+            ],
+            [
+              174.54807079537312,
+              -36.76998389589662
+            ],
+            [
+              174.548071438126,
+              -36.76997823228808
+            ],
+            [
+              174.54807658014346,
+              -36.76997205380574
+            ],
+            [
+              174.54808300766473,
+              -36.76996896456402
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      }
+    },
+    {
+      "id": "8c2fc8bd5e0d35008b5c4afdbacc76ce",
+      "type": "Feature",
+      "properties": {
+        "name": "Remove driveway",
+        "hidden": false,
+        "apiData": {
+          "constructionCost": 2869.64414338302,
+          "maintenanceCost": 104.45504681914194,
+          "coolSpot": 0,
+          "tempReduction": 0.2953016853356667,
+          "captureUnit": 8.289170114685382,
+          "filteringUnit": 9.325316379021055,
+          "settlingUnit": 9.325316379021055,
+          "Fmeas_area": 125.6400365121828,
+          "groundwater_recharge": 24.10283440097642,
+          "evapotranspiration": 75.17241147755306,
+          "storageCapacity": 7.114820190205835
+        },
+        "area": 377.42351266904404,
+        "length": 94.35587816726101,
+        "measure": "91",
+        "color": "#47cd49",
+        "defaultInflow": 1,
+        "defaultDepth": 0.075,
+        "defaultWidth": 1,
+        "defaultRadius": 0.0001,
+        "areaInflow": null,
+        "areaDepth": null,
+        "areaWidth": null,
+        "areaRadius": null
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            174.54781846119323,
+            -36.769816817366035
+          ],
+          [
+            174.54799843181257,
+            -36.76976172576185
+          ],
+          [
+            174.5481160554662,
+            -36.76989301877133
+          ],
+          [
+            174.54807749033455,
+            -36.76991206911118
+          ],
+          [
+            174.5480170716255,
+            -36.76983895697117
+          ],
+          [
+            174.54799714630678,
+            -36.76984873958584
+          ],
+          [
+            174.5479842912623,
+            -36.76983123385402
+          ],
+          [
+            174.5479489398914,
+            -36.769846680088335
+          ],
+          [
+            174.54794251237,
+            -36.76984153134387
+          ],
+          [
+            174.5479116602636,
+            -36.769856977575465
+          ],
+          [
+            174.5479090892539,
+            -36.769852343706624
+          ],
+          [
+            174.54793608484687,
+            -36.76983947184618
+          ],
+          [
+            174.54793351383904,
+            -36.76983020410458
+          ],
+          [
+            174.5479225870513,
+            -36.76982557023413
+          ],
+          [
+            174.54789751971515,
+            -36.76982505535981
+          ],
+          [
+            174.54785445531707,
+            -36.76982505535981
+          ],
+          [
+            174.54783131623577,
+            -36.7698322636033
+          ],
+          [
+            174.5478152474306,
+            -36.76983123385395
+          ],
+          [
+            174.54782167495387,
+            -36.76981733224038
+          ],
+          [
+            174.54800100282034,
+            -36.76976275551212
+          ]
+        ],
+        "type": "LineString"
+      }
+    },
+    {
+      "id": "e69be0a37c23e52c1a6d485a6e67b1e7",
+      "type": "Feature",
+      "properties": {
+        "name": "Remove deck",
+        "hidden": false,
+        "apiData": {
+          "constructionCost": 895.8997012573097,
+          "maintenanceCost": 32.61074912576608,
+          "coolSpot": 0,
+          "tempReduction": 0.09219285683315202,
+          "captureUnit": 2.587869665491986,
+          "filteringUnit": 2.9113533736784847,
+          "settlingUnit": 2.9113533736784847,
+          "Fmeas_area": 39.224679281844395,
+          "groundwater_recharge": 7.524878019834323,
+          "evapotranspiration": 23.46874302893045,
+          "storageCapacity": 2.9616519049828423
+        },
+        "measure": "91",
+        "color": "#47cd49",
+        "defaultInflow": 1,
+        "defaultDepth": 0.075,
+        "defaultWidth": 1,
+        "defaultRadius": 0.0001,
+        "areaInflow": null,
+        "areaDepth": "0.1",
+        "areaWidth": null,
+        "areaRadius": null
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              174.54791975032663,
+              -36.76985582691156
+            ],
+            [
+              174.54792851003077,
+              -36.769852112066154
+            ],
+            [
+              174.54794190722407,
+              -36.76986408212246
+            ],
+            [
+              174.54795891135512,
+              -36.76985747795428
+            ],
+            [
+              174.54796509467604,
+              -36.7698653204041
+            ],
+            [
+              174.54794087667108,
+              -36.76987935426032
+            ],
+            [
+              174.54798364463733,
+              -36.7699346641383
+            ],
+            [
+              174.54795839607942,
+              -36.769947046941
+            ],
+            [
+              174.54790274619552,
+              -36.7698814180609
+            ],
+            [
+              174.54793211696688,
+              -36.76986944800978
+            ],
+            [
+              174.54791975032663,
+              -36.76985582691156
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      }
+    }
+  ],
+  "legalAccepted": true,
+  "map": {
+    "center": {
+      "lat": -36.769972156733246,
+      "lng": 174.54804607996596
+    },
+    "customLayers": [],
+    "layers": [
+      {
+        "id": "1544903",
+        "visible": true,
+        "showLegend": true,
+        "opacity": 1
+      }
+    ],
+    "zoom": 20.380002378191072
+  },
+  "displayMap": true,
+  "settings": {
+    "area": {
+      "id": "2ec25c4cdcee07272316dae283957236",
+      "type": "Feature",
+      "properties": {
+        "area": 915.5490153078619,
+        "isProjectArea": true
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              174.547819,
+              -36.769816
+            ],
+            [
+              174.548,
+              -36.769761
+            ],
+            [
+              174.5483,
+              -36.770095
+            ],
+            [
+              174.548084,
+              -36.770162
+            ],
+            [
+              174.547804,
+              -36.769852
+            ],
+            [
+              174.547819,
+              -36.769816
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      }
+    },
+    "general": {
+      "title": "assets_outlined"
+    },
+    "projectArea": {
+      "scenarioName": "NORCT_LDRes_PD",
+      "capacity": {
+        "heatCoping": false,
+        "droughtCoping": false,
+        "floodCoping": true,
+        "waterSafetyCoping": true
+      },
+      "multifunctionality": "0.3",
+      "scale": {
+        "city": false,
+        "neighbourhood": false,
+        "street": false,
+        "building": true
+      },
+      "suitability": {
+        "greySpace": true,
+        "greenSpacePrivateGardens": true,
+        "greenSpaceNoRecreation": false,
+        "greenSpaceRecreationUrbanFarming": false,
+        "greyGreenSpaceSportsPlayground": false,
+        "redSpace": true,
+        "blueSpace": false
+      },
+      "subsurface": "low",
+      "surface": "highSlopeRoofs",
+      "soil": "peat",
+      "slope": "slopingArea"
+    },
+    "targets": {
+      "climate": {
+        "storageCapacity": {
+          "include": true,
+          "value": "0"
+        },
+        "groundwater_recharge": {
+          "include": true,
+          "value": "0"
+        },
+        "evapotranspiration": {
+          "include": true,
+          "value": "0"
+        },
+        "tempReduction": {
+          "include": true,
+          "value": "0"
+        },
+        "coolSpot": {
+          "include": true,
+          "value": "0"
+        },
+        "Fmeas_area": {
+          "include": true,
+          "value": "0"
+        }
+      },
+      "cost": {
+        "constructionCost": {
+          "include": true,
+          "value": "0"
+        },
+        "maintenanceCost": {
+          "include": true,
+          "value": "0"
+        }
+      },
+      "waterquality": {
+        "filteringUnit": {
+          "include": true,
+          "value": "100"
+        },
+        "captureUnit": {
+          "include": true,
+          "value": "100"
+        },
+        "settlingUnit": {
+          "include": true,
+          "value": "100"
+        }
+      }
+    },
+    "userViewedProjectSettings": true,
+    "pluvfloodParam": {
+      "A_p": 1831.0980306157237,
+      "Frac_RA": 0.02
+    }
+  },
+  "measureOverrides": {
+    "6": {
+      "color": {
+        "hex": "#1fff80"
+      }
+    },
+    "12": {
+      "color": {
+        "hex": "#ed8e07"
+      }
+    },
+    "15": {
+      "color": {
+        "hex": "#e2d05a"
+      }
+    },
+    "26": {
+      "color": {
+        "hex": "#d0af71"
+      }
+    },
+    "27": {
+      "color": {
+        "hex": "#bfe996"
+      }
+    },
+    "72": {
+      "color": {
+        "hex": "#03b09c"
+      }
+    },
+    "73": {
+      "color": {
+        "hex": "#19c313"
+      }
+    },
+    "82": {
+      "color": {
+        "hex": "#636363"
+      }
+    },
+    "90": {
+      "color": {
+        "hex": "#474747"
+      }
+    },
+    "91": {
+      "color": {
+        "hex": "#47cd49"
+      }
+    }
+  },
+  "savedInWorkspace": "crctool-org"
+}

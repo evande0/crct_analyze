@@ -5,7 +5,7 @@ import numpy as np
 from datetime import datetime
 import matplotlib.pyplot as plt
 from config import *
-from utils import *
+from src.utils import *
 
 logger = None
 
@@ -39,7 +39,7 @@ def process_data(use_config=False):
         return
 
     # Sort results
-    sorted_scenario_scores = sort_scores(zip(scenarios, scores))
+    sorted_scenario_scores = sort_scores(zip(scenarios[1:], scores[1:]))
     set_sorted_scenario_scores(sorted_scenario_scores)
     print_scenario_scores(sorted_scenario_scores)
     write_scores_to_csv(PROCESSED_DIR, sorted_scenario_scores)
@@ -111,18 +111,18 @@ def compute_weighted_scores(A_norm, weights):
         return None
 
 def sort_scores(scenario_scores):
-    if SORT_TYPE == 0:
+    if SORT_IDX == 0:
         logger.debug(f"\t✔️  Sorted by Scenario name")
         return sorted(scenario_scores, key=lambda x: x[0].lower())
-    elif SORT_TYPE == 1:
+    elif SORT_IDX == 1:
         logger.debug(f"\t✔️  Sorted by Score (ascending)")
         return sorted(scenario_scores, reverse=True, key=lambda x: x[1])
-    elif SORT_TYPE == 2:
+    elif SORT_IDX == 2:
         logger.debug(f"\t✔️  Sorted by Score (descending)")
         return sorted(scenario_scores, key=lambda x: x[1])
     else:
         logger.error(f"\tERROR: Invalid sort index {args.sortindex}."
-              f"See SORT_TYPE in config.py")
+              f"See SORT_IDX in config.py")
         logger.error("! Returning unsorted scores.")
         return scenario_scores
 

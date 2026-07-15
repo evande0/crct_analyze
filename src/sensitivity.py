@@ -5,9 +5,9 @@ import csv
 from matplotlib.patches import Patch
 import matplotlib.pyplot as plt
 from config import *
-import utils
-from extract_data import init_extract, extract_all_data
-import process_data as proc
+import src.utils as utils
+from src.extract_data import init_extract, extract_all_data
+import src.process_data as proc
 
 logger = None
 scenario_names = None
@@ -17,11 +17,8 @@ baseline_winner = None
 base_weights = None
 
 
-
 """
 Run sensitivity analysis
-
-
 
 """
 def run_sensitivity_analysis(step_size=TARGET_STEP_SIZE, pipeline=False):
@@ -156,7 +153,7 @@ def init_logger(args):
     global logger
     logger = utils.get_logger()
     if logger is None:
-        logger = utils.init_logging(LOG_FILE, verbose=args.verbose, debug=args.debug, quiet=args.quiet)
+        logger = utils.init_logging(LOG_FILEPATH, verbose=args.verbose, debug=args.debug, quiet=args.quiet)
         utils.set_logger(logger)
     logger.debug("Logger initiatied")
 
