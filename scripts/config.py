@@ -62,13 +62,13 @@ Weights - Edit me to reflect criteria priorities
 DEFAULT = np.array([
     0.20,     # ConstructionCost
     0.20,     # MaintenanceCost
+    0.20,     # StorageCapacity
+    0.10,     # GroundwaterRecharge
+    0.10,     # Evapotranspiration
     0.05,     # TempReduction
     0.05,     # NutrientReduction
     0.05,     # PathogenReduction
-    0.05,     # AdsorbingPollutants
-    0.10,      # GroundwaterRecharge
-    0.10,      # Evapotranspiration
-    0.20       # StorageCapacity
+    0.05      # AdsorbingPollutants
     ])
 
 
@@ -78,13 +78,14 @@ Flat weights (.111111)
 FLAT = np.array([
     .111111,     # ConstructionCost
     .111111,     # MaintenanceCost
+    .111111,     # StorageCapacity
+    .111111,     # GroundwaterRecharge
+    .111111,     # Evapotranspiration
     .111111,     # TempReduction
     .111111,     # NutrientReduction
     .111111,     # PathogenReduction
-    .111111,     # AdsorbingPollutants
-    .111111,      # GroundwaterRecharge
-    .111111,      # Evapotranspiration
-    .111111       # StorageCapacity
+    .111111      # AdsorbingPollutants
+
     ])
 
 '''
@@ -93,13 +94,13 @@ To use, run with: -w CUSTOM_WEIGHTS1
 CUSTOM1 = np.array([
     .111111,     # ConstructionCost
     .111111,     # MaintenanceCost
+    .111111,     # StorageCapacity
+    .111111,     # GroundwaterRecharge
+    .111111,     # Evapotranspiration
     .111111,     # TempReduction
     .111111,     # NutrientReduction
     .111111,     # PathogenReduction
-    .111111,     # AdsorbingPollutants
-    .111111,      # GroundwaterRecharge
-    .111111,      # Evapotranspiration
-    .111111       # StorageCapacity
+    .111111      # AdsorbingPollutants
     ])
 
 '''
@@ -108,13 +109,13 @@ To use, run with: -w CUSTOM_WEIGHTS2
 CUSTOM2 = np.array([
     .111111,     # ConstructionCost
     .111111,     # MaintenanceCost
+    .111111,     # StorageCapacity
+    .111111,     # GroundwaterRecharge
+    .111111,     # Evapotranspiration
     .111111,     # TempReduction
     .111111,     # NutrientReduction
     .111111,     # PathogenReduction
-    .111111,     # AdsorbingPollutants
-    .111111,      # GroundwaterRecharge
-    .111111,      # Evapotranspiration
-    .111111       # StorageCapacity
+    .111111      # AdsorbingPollutants
     ])
 
 WeightsIndex = Enum('Weights', [('DEFAULT', 0), ('FLAT', 1), ('CUSTOM1', 2), ('CUSTOM2', 3)])
@@ -134,15 +135,15 @@ FIELD_MAP = {
         "MeasureCode": ("properties", "measure"),
         "ConstructionCost": ("apiData", "constructionCost"),
         "MaintenanceCost": ("apiData", "maintenanceCost"),
-        "CoolSpot": ("apiData", "coolSpot"),
+        "StorageCapacity": ("apiData", "storageCapacity"),
+        "GroundwaterRecharge": ("apiData", "groundwater_recharge"),
+        "Evapotranspiration": ("apiData", "evapotranspiration"),
         "TempReduction": ("apiData", "tempReduction"),
         "NutrientReduction": ("apiData", "captureUnit"),
         "PathogenReduction": ("apiData", "filteringUnit"),
         "AdsorbingPollutants": ("apiData", "settlingUnit"),
-        "FMeasureArea": ("apiData", "Fmeas_area"),
-        "GroundwaterRecharge": ("apiData", "groundwater_recharge"),
-        "Evapotranspiration": ("apiData", "evapotranspiration"),
-        "StorageCapacity": ("apiData", "storageCapacity")
+        "CoolSpot": ("apiData", "coolSpot"),
+        "FMeasureArea": ("apiData", "Fmeas_area")
     }
 HEADERS = list(FIELD_MAP.keys())
 
@@ -152,13 +153,13 @@ HEADERS = list(FIELD_MAP.keys())
 ATTRIBUTES_LIST = [
     "ConstructionCost",
     "MaintenanceCost",
+    "StorageCapacity",
+    "GroundwaterRecharge",
+    "Evapotranspiration",
     "TempReduction",
     "NutrientReduction",
     "PathogenReduction",
     "AdsorbingPollutants",
-    "GroundwaterRecharge",
-    "Evapotranspiration",
-    "StorageCapacity"
 ]
 
 '''
@@ -167,6 +168,27 @@ Sensitivity
 TARGET_STEP_SIZE = 0.05
 NON_TARGET_STEP_SIZE = TARGET_STEP_SIZE / (len(ATTRIBUTES_LIST) - 1)
 ''''''
+
+'''
+Visualisations
+'''
+WIDTH = 7.2
+HEIGHT = 4.5
+TITLE_SIZE = 13
+LABEL_SIZE = 12
+TICK_SIZE = 11
+VALUE_SIZE = 10
+ROTATION = 30
+BAR_HEIGHT = 1.0
+LINE_WIDTH = 0.25
+GRID_ALPHA = 0.5
+BAR_ALPHA = 0.9
+PADDING = 0.05
+ANCHOR = (0.5, -0.15)
+EDGE_COLOR = '#555555'
+AX_COLOR = '#333333'
+VALUE_DARK = '#222222'
+VALUE_LIGHT = '#FFFFFF'
 
 
 # Help Strings
@@ -179,7 +201,7 @@ HELP_SORTTYPE = "0: Sort by scenario name. 1: Sort by score ascending. 2: Sort b
 HELP_VERBOSE = "Print INFO logs to console"
 HELP_DEBUG = "Print DEBUG logs to console"
 HELP_QUIET = "Suppress all but CRITICAL logs from printing to console"
-HELP_SHOWRADAR = "Display radar charts in addition to saving them as PNGs"
+HELP_SHOW = "Display visualisations in addition to saving them as PNGs"
 HELP_WEIGHTS = "Specify the name of the weights to use (DEFAULT, FLAT, CUSTOM1, CUSTOM2). Example: -w CUSTOM1"
-
+HELP_COMPACT = "Compact visualisations without titles, compatible with LNCS format"
 

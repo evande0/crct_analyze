@@ -40,15 +40,23 @@ def sweep_attribute_weights(writer, attributes_norm):
         weights = get_attr_start_weights(target_idx)
         attr_winners = []
         attr_scores = []
+        first_reverse = None
+        reverse_score = None
+        new_winner = None
         # Find scores & winner, increment weights by step size
         while weights[target_idx] < 1 + TARGET_STEP_SIZE:
             scores = calculate_scores(writer, attributes_norm, weights)
             score_spread, this_winner, rank_reversal = analyze_scores(scores)
+            if rank_reversal == "YES" and first_reverse is None:
+                first_reverse = weights[target_idx]
+                new_winner = this_winner
+                winner_idx = scenario_names.index(this_winner)
+                reverse_score = scores[winner_idx]
             attr_scores.append(scores)
             attr_winners.append(this_winner)
             writer.writerow([target_attr, round(weights[target_idx], 4), rank_reversal, this_winner, round(score_spread, 4)])
             weights = increment_weights(weights, target_idx)
-        plot_stability(target_attr, attr_scores, SENS_DIR)
+        plot_stability(target_attr, attr_scores, SENS_DIR, first_reverse, reverse_score, new_winner)
 
 
 """
@@ -87,25 +95,41 @@ def analyze_scores(scores):
     rank_reversal = "YES" if this_winner != baseline_winner else "NO"
     return score_spread, this_winner, rank_reversal
 
-def plot_stability(attr_name, all_scores, save_path):
-    scores_matrix = np.array(all_scores) # Shape: (Num_Steps, Num_Scenarios)
-    plot_lines(scores_matrix)
+def plot_stability(attr_name, all_scores, save_path, reversal_weight, reversal_score, new_winner):
+    scores_matrix = np.array(all_scores)
+    plot_lines(scores_matrix, reversal_weight, reversal_score, new_winner)
     plot_labels(attr_name)
     utils.save_png(f"sensitivity_{attr_name}", SENS_DIR)
     plt.close()
 
-def plot_lines(scores_matrix):
+def plot_lines(scores_matrix, reversal_weight, baseline_score, new_winner):
     test_weights = np.arange(0.0, 1.0 + TARGET_STEP_SIZE, TARGET_STEP_SIZE)
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(10, 4))
     for idx, scenario in enumerate(scenario_names):
         scenario_scores = scores_matrix[:, idx]
-        # Highlight the baseline winner with a distinct line style or thickness
         linewidth = 2.5 if scenario == baseline_winner else 1.5
         linestyle = '-' if scenario == baseline_winner else '--'
         plt.plot(test_weights, scenario_scores, label=os.path.basename(scenario), linewidth=linewidth, linestyle=linestyle)
 
+    if reversal_weight is not None:
+        plt.axvline(x=reversal_weight, color='red', linestyle='-', alpha=0.2,
+                    label=f'Rank Reversal (weight={reversal_weight:.2f})')
+
+        # Highlight the intersection point on the baseline curve
+        plt.scatter(reversal_weight, baseline_score, color='red', s=30, zorder=5)
+
+        # Add a text annotation near the point
+        plt.annotate(
+            f"Reversal @ {reversal_weight:.2f}\n{new_winner}",
+            xy=(reversal_weight, baseline_score),
+            xytext=(reversal_weight - 0.3 , baseline_score + 0.3), # Slightly offset the text
+            arrowprops=dict(arrowstyle="->", color='red', lw=1),
+            bbox=dict(boxstyle="round,pad=0.3", fc="yellow", alpha=0.3, ec="red"),
+            fontsize=9
+        )
+
 def plot_labels(attr_name):
-    plt.title(f"Sensitivity Profile: Sensitivity to '{attr_name}' Weight", fontsize=12, fontweight='bold')
+    plt.title(f"Sensitivity to {attr_name} Weight", fontsize=12, fontweight='bold')
     plt.xlabel(f"Assigned Weight for {attr_name} (0.0 to 1.0)", fontweight='bold')
     plt.ylabel("Final Weighted SAW Score", fontweight='bold')
     plt.xlim(0.0, 1.0)
