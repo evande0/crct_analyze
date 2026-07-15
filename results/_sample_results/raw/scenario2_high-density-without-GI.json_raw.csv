@@ -1,3 +1,0 @@
-Name,MeasureCode,ConstructionCost,MaintenanceCost,StorageCapacity,GroundwaterRecharge,Evapotranspiration,TempReduction,NutrientReduction,PathogenReduction,AdsorbingPollutants,CoolSpot,FMeasureArea
-Cover yard with impermeable surfaces,91,0.0,0.0,-40.203350188394595,-136.19665234678334,-424.7728969030664,-1.668646114643335,-46.839189182970806,-52.69408783084215,-52.69408783084215,0,-709.9477218743087
-scenario2_high-density-without-GI.json,-,0.0,0.0,-40.20335,-136.19665,-424.7729,-1.66865,-46.83919,-52.69409,-52.69409,0.0,-709.94772
