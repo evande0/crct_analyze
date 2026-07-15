@@ -1,0 +1,263 @@
+{
+  "areas": [
+    {
+      "id": "109c794dd6e000f254b9c6699ba032eb",
+      "type": "Feature",
+      "properties": {
+        "name": "Placeholder",
+        "hidden": false,
+        "apiData": {
+          "constructionCost": -1.0,
+          "maintenanceCost": -1.0,
+          "coolSpot": 0,
+          "tempReduction": 0,
+          "captureUnit": 0,
+          "filteringUnit": 0,
+          "settlingUnit": 0,
+          "Fmeas_area": 0,
+          "groundwater_recharge": 0,
+          "evapotranspiration": 0,
+          "storageCapacity": 0
+        },
+        "measure": "1",
+        "color": "#BAF785",
+        "defaultInflow": 1,
+        "defaultDepth": 0.075,
+        "defaultWidth": 1,
+        "defaultRadius": 0.00001,
+        "areaInflow": null,
+        "areaDepth": null,
+        "areaWidth": null,
+        "areaRadius": null
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              174.5479140625231,
+              -36.769856488864214
+            ],
+            [
+              174.5479261368895,
+              -36.7698691046813
+            ],
+            [
+              174.54793926120072,
+              -36.76986405835467
+            ],
+            [
+              174.5479245619715,
+              -36.76985060148221
+            ],
+            [
+              174.5479140625231,
+              -36.769856488864214
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      }
+    }
+  ],
+  "legalAccepted": true,
+  "map": {
+    "center": {
+      "lat": -36.76992907319442,
+      "lng": 174.548086189611
+    },
+    "customLayers": [],
+    "layers": [
+      {
+        "id": "1544903",
+        "visible": true,
+        "showLegend": true,
+        "opacity": 1
+      }
+    ],
+    "zoom": 19.55859748963013
+  },
+  "displayMap": true,
+  "settings": {
+    "area": {
+      "id": "2ec25c4cdcee07272316dae283957236",
+      "type": "Feature",
+      "properties": {
+        "area": 915.5490153078619,
+        "isProjectArea": true
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              174.547819,
+              -36.769816
+            ],
+            [
+              174.548,
+              -36.769761
+            ],
+            [
+              174.5483,
+              -36.770095
+            ],
+            [
+              174.548084,
+              -36.770162
+            ],
+            [
+              174.547804,
+              -36.769852
+            ],
+            [
+              174.547819,
+              -36.769816
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      }
+    },
+    "general": {
+      "title": "scenario0_control"
+    },
+    "projectArea": {
+      "scenarioName": "NORCT_LDRes_PD",
+      "capacity": {
+        "heatCoping": true,
+        "droughtCoping": true,
+        "floodCoping": true,
+        "waterSafetyCoping": true
+      },
+      "multifunctionality": "0.3",
+      "scale": {
+        "city": true,
+        "neighbourhood": true,
+        "street": true,
+        "building": true
+      },
+      "suitability": {
+        "greySpace": true,
+        "greenSpacePrivateGardens": true,
+        "greenSpaceNoRecreation": true,
+        "greenSpaceRecreationUrbanFarming": true,
+        "greyGreenSpaceSportsPlayground": true,
+        "redSpace": true,
+        "blueSpace": true
+      },
+      "subsurface": "low",
+      "surface": "highSlopeRoofs",
+      "soil": "peat",
+      "slope": "slopingArea"
+    },
+    "targets": {
+      "climate": {
+        "storageCapacity": {
+          "include": true,
+          "value": "0"
+        },
+        "groundwater_recharge": {
+          "include": true,
+          "value": "0"
+        },
+        "evapotranspiration": {
+          "include": true,
+          "value": "0"
+        },
+        "tempReduction": {
+          "include": true,
+          "value": "0"
+        },
+        "coolSpot": {
+          "include": true,
+          "value": "0"
+        },
+        "Fmeas_area": {
+          "include": true,
+          "value": "0"
+        }
+      },
+      "cost": {
+        "constructionCost": {
+          "include": true,
+          "value": "0"
+        },
+        "maintenanceCost": {
+          "include": true,
+          "value": "0"
+        }
+      },
+      "waterquality": {
+        "filteringUnit": {
+          "include": true,
+          "value": "100"
+        },
+        "captureUnit": {
+          "include": true,
+          "value": "100"
+        },
+        "settlingUnit": {
+          "include": true,
+          "value": "100"
+        }
+      }
+    },
+    "userViewedProjectSettings": true,
+    "pluvfloodParam": {
+      "A_p": 1831.0980306157237,
+      "Frac_RA": 0.02
+    }
+  },
+  "measureOverrides": {
+    "6": {
+      "color": {
+        "hex": "#1fff80"
+      }
+    },
+    "12": {
+      "color": {
+        "hex": "#ed8e07"
+      }
+    },
+    "15": {
+      "color": {
+        "hex": "#217d07"
+      }
+    },
+    "26": {
+      "color": {
+        "hex": "#d0af71"
+      }
+    },
+    "27": {
+      "color": {
+        "hex": "#bfe996"
+      }
+    },
+    "72": {
+      "color": {
+        "hex": "#03b09c"
+      }
+    },
+    "73": {
+      "color": {
+        "hex": "#09ff00"
+      }
+    },
+    "82": {
+      "color": {
+        "hex": "#636363"
+      }
+    },
+    "90": {
+      "color": {
+        "hex": "#474747"
+      }
+    },
+    "91": {
+      "color": {
+        "hex": "#abca9b"
+      }
+    }
+  },
+  "savedInWorkspace": "crctool-org"
+}
