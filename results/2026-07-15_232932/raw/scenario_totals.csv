@@ -1,0 +1,7 @@
+Name,MeasureCode,ConstructionCost,MaintenanceCost,StorageCapacity,GroundwaterRecharge,Evapotranspiration,TempReduction,NutrientReduction,PathogenReduction,AdsorbingPollutants,CoolSpot,FMeasureArea
+scenario0_control-(no-changes).json,-,-1.0,-1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+scenario1_single-home-with-GI.json,-,145796.86546,10704.47004,77.62195,41.97135,12.59137,0.68868,30.65733,48.54833,48.54833,0.0,1621.0218
+scenario2_high-density-without-GI.json,-,0.0,0.0,-40.20335,-136.19665,-424.7729,-1.66865,-46.83919,-52.69409,-52.69409,0.0,-709.94772
+scenario3_high-density-with-GI.json,-,212729.84074,44297.61951,2.25174,-106.44976,-302.29433,0.2622,-28.24197,32.61301,32.61301,0.0,1357.02848
+scenario4_open-greenspace.json,-,8365.97972,304.52166,20.11839,70.26788,219.15291,0.8609,24.16572,27.18644,27.18644,0.0,366.28305
+scenario5_bioswale-and-dry-pond.json,-,85789.0931,1332.20702,278.63074,195.68157,220.43736,2.34062,37.58414,43.95946,43.28854,0.0,7111.93772

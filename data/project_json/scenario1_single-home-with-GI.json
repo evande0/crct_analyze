@@ -1,0 +1,460 @@
+{
+  "areas": [
+    {
+      "id": "cdb55e9c3a49b034d702baf16feb935c",
+      "type": "Feature",
+      "properties": {
+        "name": "House Green Roof",
+        "hidden": false,
+        "apiData": {
+          "constructionCost": 30788.496389310945,
+          "maintenanceCost": 9493.119719011258,
+          "coolSpot": 0,
+          "tempReduction": 0.35615714122503656,
+          "captureUnit": -2.499348359473941,
+          "filteringUnit": 11.247067617632734,
+          "settlingUnit": 11.247067617632734,
+          "Fmeas_area": 79.87624400063605,
+          "groundwater_recharge": 0.0012496741797369704,
+          "evapotranspiration": 9.79744556913785,
+          "storageCapacity": 2.2882759294276864
+        },
+        "measure": "15",
+        "color": "#5cd674",
+        "defaultInflow": 1,
+        "defaultDepth": 0.02,
+        "defaultWidth": 1,
+        "defaultRadius": 1,
+        "areaInflow": "1",
+        "areaDepth": "0.02",
+        "areaWidth": null,
+        "areaRadius": null
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              174.54794160217887,
+              -36.76987989138054
+            ],
+            [
+              174.54801680418728,
+              -36.76983973118233
+            ],
+            [
+              174.54810357573626,
+              -36.769945280375055
+            ],
+            [
+              174.54802901647895,
+              -36.76998698083254
+            ],
+            [
+              174.54794160217887,
+              -36.76987989138054
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      }
+    },
+    {
+      "id": "8c2fc8bd5e0d35008b5c4afdbacc76ce",
+      "type": "Feature",
+      "properties": {
+        "name": "Permeable Pavement Driveway",
+        "hidden": false,
+        "apiData": {
+          "constructionCost": 106195.49151320421,
+          "maintenanceCost": 1123.2215451779537,
+          "coolSpot": 0,
+          "tempReduction": 0,
+          "captureUnit": 33.156680458741526,
+          "filteringUnit": 37.30126551608422,
+          "settlingUnit": 37.30126551608422,
+          "Fmeas_area": 356.94838599448906,
+          "groundwater_recharge": 9.703302536250709,
+          "evapotranspiration": 2.3972279971670125,
+          "storageCapacity": 37.94570768109779
+        },
+        "measure": "26",
+        "color": "#d0af71",
+        "defaultInflow": 1,
+        "defaultDepth": 0.1,
+        "defaultWidth": 4,
+        "defaultRadius": 0.0001,
+        "areaInflow": "1.2",
+        "areaDepth": "0.1",
+        "areaWidth": null,
+        "areaRadius": null,
+        "area": 377.42351266904404,
+        "length": 94.35587816726101
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            174.54781846119323,
+            -36.769816817366035
+          ],
+          [
+            174.54799843181257,
+            -36.76976172576185
+          ],
+          [
+            174.5481160554662,
+            -36.76989301877133
+          ],
+          [
+            174.54807749033455,
+            -36.76991206911118
+          ],
+          [
+            174.5480170716255,
+            -36.76983895697117
+          ],
+          [
+            174.54799714630678,
+            -36.76984873958584
+          ],
+          [
+            174.5479842912623,
+            -36.76983123385402
+          ],
+          [
+            174.5479489398914,
+            -36.769846680088335
+          ],
+          [
+            174.54794251237,
+            -36.76984153134387
+          ],
+          [
+            174.5479116602636,
+            -36.769856977575465
+          ],
+          [
+            174.5479090892539,
+            -36.769852343706624
+          ],
+          [
+            174.54793608484687,
+            -36.76983947184618
+          ],
+          [
+            174.54793351383904,
+            -36.76983020410458
+          ],
+          [
+            174.5479225870513,
+            -36.76982557023413
+          ],
+          [
+            174.54789751971515,
+            -36.76982505535981
+          ],
+          [
+            174.54785445531707,
+            -36.76982505535981
+          ],
+          [
+            174.54783131623577,
+            -36.7698322636033
+          ],
+          [
+            174.5478152474306,
+            -36.76983123385395
+          ],
+          [
+            174.54782167495387,
+            -36.76981733224038
+          ],
+          [
+            174.54800100282034,
+            -36.76976275551212
+          ]
+        ],
+        "type": "LineString"
+      }
+    },
+    {
+      "id": "644f3887b30a8ab815dc9c0152403180",
+      "type": "Feature",
+      "properties": {
+        "name": "Rain Garden",
+        "hidden": false,
+        "apiData": {
+          "constructionCost": 8812.877554159944,
+          "maintenanceCost": 88.12877554159944,
+          "coolSpot": 0,
+          "tempReduction": 0.3325271021776115,
+          "captureUnit": 0,
+          "filteringUnit": 0,
+          "settlingUnit": 0,
+          "Fmeas_area": 1184.1971669042205,
+          "groundwater_recharge": 32.26679652884858,
+          "evapotranspiration": 0.39669899908908035,
+          "storageCapacity": 37.38796538128461
+        },
+        "measure": "6",
+        "color": "#568f57",
+        "defaultInflow": 10,
+        "defaultDepth": 0.35,
+        "defaultWidth": 1,
+        "defaultRadius": 0.0001,
+        "areaInflow": null,
+        "areaDepth": null,
+        "areaWidth": null,
+        "areaRadius": null,
+        "area": 38.74130097760029
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              174.54784818990458,
+              -36.76988749957322
+            ],
+            [
+              174.54796215413887,
+              -36.77001726220803
+            ],
+            [
+              174.54801342416846,
+              -36.76999332214188
+            ],
+            [
+              174.5479678221821,
+              -36.76994028248606
+            ],
+            [
+              174.54795648609388,
+              -36.76994606112855
+            ],
+            [
+              174.54788635183837,
+              -36.7698626331488
+            ],
+            [
+              174.54790766001145,
+              -36.76985226738746
+            ],
+            [
+              174.54788776429342,
+              -36.769828532012
+            ],
+            [
+              174.54782528462778,
+              -36.76985626534565
+            ],
+            [
+              174.54784818990458,
+              -36.76988749957322
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      }
+    }
+  ],
+  "legalAccepted": true,
+  "map": {
+    "center": {
+      "lat": -36.76990848132304,
+      "lng": 174.54792096388655
+    },
+    "customLayers": [],
+    "layers": [
+      {
+        "id": "1544903",
+        "visible": true,
+        "showLegend": true,
+        "opacity": 1
+      }
+    ],
+    "zoom": 20.038396317634156
+  },
+  "displayMap": true,
+  "settings": {
+    "area": {
+      "id": "2ec25c4cdcee07272316dae283957236",
+      "type": "Feature",
+      "properties": {
+        "area": 915.5490153078619,
+        "isProjectArea": true
+      },
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              174.547819,
+              -36.769816
+            ],
+            [
+              174.548,
+              -36.769761
+            ],
+            [
+              174.5483,
+              -36.770095
+            ],
+            [
+              174.548084,
+              -36.770162
+            ],
+            [
+              174.547804,
+              -36.769852
+            ],
+            [
+              174.547819,
+              -36.769816
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      }
+    },
+    "general": {
+      "title": "scenario1_single-home-with-GI"
+    },
+    "projectArea": {
+      "scenarioName": "NORCT_LDRes_PD",
+      "capacity": {
+        "heatCoping": false,
+        "droughtCoping": false,
+        "floodCoping": true,
+        "waterSafetyCoping": true
+      },
+      "multifunctionality": "0.3",
+      "scale": {
+        "city": false,
+        "neighbourhood": false,
+        "street": false,
+        "building": true
+      },
+      "suitability": {
+        "greySpace": true,
+        "greenSpacePrivateGardens": true,
+        "greenSpaceNoRecreation": false,
+        "greenSpaceRecreationUrbanFarming": false,
+        "greyGreenSpaceSportsPlayground": false,
+        "redSpace": true,
+        "blueSpace": false
+      },
+      "subsurface": "low",
+      "surface": "highSlopeRoofs",
+      "soil": "peat",
+      "slope": "slopingArea"
+    },
+    "targets": {
+      "climate": {
+        "storageCapacity": {
+          "include": true,
+          "value": "0"
+        },
+        "groundwater_recharge": {
+          "include": true,
+          "value": "0"
+        },
+        "evapotranspiration": {
+          "include": true,
+          "value": "0"
+        },
+        "tempReduction": {
+          "include": true,
+          "value": "0"
+        },
+        "coolSpot": {
+          "include": true,
+          "value": "0"
+        },
+        "Fmeas_area": {
+          "include": true,
+          "value": "0"
+        }
+      },
+      "cost": {
+        "constructionCost": {
+          "include": true,
+          "value": "0"
+        },
+        "maintenanceCost": {
+          "include": true,
+          "value": "0"
+        }
+      },
+      "waterquality": {
+        "filteringUnit": {
+          "include": true,
+          "value": "100"
+        },
+        "captureUnit": {
+          "include": true,
+          "value": "100"
+        },
+        "settlingUnit": {
+          "include": true,
+          "value": "100"
+        }
+      }
+    },
+    "userViewedProjectSettings": true,
+    "pluvfloodParam": {
+      "A_p": 1831.0980306157237,
+      "Frac_RA": 0.02
+    }
+  },
+  "measureOverrides": {
+    "6": {
+      "color": {
+        "hex": "#568f57"
+      }
+    },
+    "12": {
+      "color": {
+        "hex": "#ed8e07"
+      }
+    },
+    "15": {
+      "color": {
+        "hex": "#5cd674"
+      }
+    },
+    "26": {
+      "color": {
+        "hex": "#d0af71"
+      }
+    },
+    "27": {
+      "color": {
+        "hex": "#bfe996"
+      }
+    },
+    "72": {
+      "color": {
+        "hex": "#03b09c"
+      }
+    },
+    "73": {
+      "color": {
+        "hex": "#19c313"
+      }
+    },
+    "82": {
+      "color": {
+        "hex": "#636363"
+      }
+    },
+    "90": {
+      "color": {
+        "hex": "#474747"
+      }
+    },
+    "91": {
+      "color": {
+        "hex": "#1cfdc4"
+      }
+    }
+  },
+  "savedInWorkspace": "crctool-org"
+}
