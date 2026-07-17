@@ -19,7 +19,7 @@ Extracts area data from a Climate Resilient Cities Tool (CRCTool) project file
 and saves it as a CSV.
 The CSV includes a totals row for all numeric columns.
 """
-def extract_all_data(folder):
+def extract_data(folder):
     count = 0
     logger.info(f"\n⏳Extracting data from all JSON files in '{folder}'...")
     path = Path(folder)
