@@ -144,10 +144,8 @@ def save_plot_png(file_name, save_path):
 """
 Initialize sensitivity analysis
 """
-def init_sensitivity(args, pipeline=False):
+def init_sensitivity(args):
     init_logger(args)
-    if not pipeline:
-        utils.create_dirs(png=False, processed=False, sens=True)
 
 def init_logger(args):
     global logger

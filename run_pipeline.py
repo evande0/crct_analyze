@@ -15,33 +15,18 @@ from src.sensitivity import init_sensitivity, run_sensitivity_analysis
 def run_full_pipeline(args, logger):
     logger.warning("\n⏳ Begin running data pipeline")
     try:
-        use_config = extract_data(force_extract=True)   # Loading from saved data is buggy
-        process_data(use_config)
+        extracted_data_pkg = extract_all_data(args.folder)
+        processed_data_pkg = process_data(extracted_data_pkg)
         analyze_data(args.show, args.compact)
         logger.warning("🎉 Data pipeline completed successfully.")
         logger.warning(f"📁 See data and analysis in {SAVE_DIR}\n")
+        if (args.sensitivity):
+            run_sensitivity_analysis(pipeline=True)
     except Exception as e:
         log_failure(e, logger)
     finally:
-        if (args.sensitivity):
-            run_sensitivity_analysis(pipeline=True)
         # Warn user if running out of log file space
-        check_log_rotation_limits(LOG_FILEPATH)
-
-def extract_data(force_extract):
-    if (not has_totals_csv() or force_extract):
-        extract_all_data(args.folder)
-        return True
-    else:
-        logger.warning("Skipping data extraction. Using saved data instead.")
-        return False
-
-
-def log_failure(e, logger):
-        logger.critical(f"\nExiting data pipeline due to error:")
-        logger.critical(f"{e}", exc_info=True)
-        logger.critical(f"\n❌ Data pipeline failed ❌")
-        logger.critical(f"\nSee logs saved to {LOG_FILEPATH}\n")
+        check_log_rotation_limits(LOG_FILEPATH)#
 
 def init_pipeline(args, logger, sens):
     logger.debug("Initializing pipeline")
@@ -50,8 +35,7 @@ def init_pipeline(args, logger, sens):
     init_process()
     init_analyze()
     set_weights(args.weights)
-    if sens:
-        init_sensitivity(args, pipeline=True)
+    if sens: init_sensitivity(args)
 
 '''
     Run the pipeline by calling 'python3 run_pipeline.py'

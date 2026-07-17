@@ -9,6 +9,7 @@ import glob
 from pathlib import Path
 import itertools
 import src.utils as utils
+import re
 
 
 logger = None
@@ -37,12 +38,10 @@ def extract_all_data(folder):
 
     utils.sort_csv(TOTALS_FILEPATH, 0, True) # Sort by scenario name
     names, raw_attributes = split_names_values_lists(files_data)
-
-    save_extracted_to_config(files_data, names, raw_attributes)
     logger.info(f"\t✔️  Extracted data from {count} JSON files in '{folder}'")
     logger.warning(f"✅ Data extraction complete.")
 
-    return names, raw_attributes
+    return {"raw_files_data": files_data, "scenario_names": names, "attributes_data": raw_attributes}
 
 
 def extract_project_data(filepath):
@@ -94,7 +93,7 @@ def extract_attributes(scenario):
 
 def calc_file_totals(rows, filepath):
     logger.debug(f"⏳Calculating totals for {os.path.basename(filepath)}...")
-    totals = {"Name" : f"{os.path.basename(filepath)}", "MeasureCode": "-"}
+    totals = {"Name" : f"{getPrettyFilename(filepath)}", "MeasureCode": "-"}
     for key in HEADERS[2:]:
         total = 0.0
         for row in rows:
@@ -110,6 +109,12 @@ def calc_file_totals(rows, filepath):
     logger.info(f"\t✔️  Calculated totals for {os.path.basename(filepath)}")
     return totals
 
+def getPrettyFilename(filepath):
+    filename = Path(filepath).stem
+    spaces_added = re.sub(r'[-_]', ' ', filename)
+    # Preserve abbreviations caps
+    title_case = " ".join(word[0].upper() + word[1:] for word in spaces_added.split())
+    return title_case
 
 """
 JSON, CSV, config.py
@@ -138,14 +143,6 @@ def append_to_totals_csv(totals):
         writer = csv.DictWriter(savetotals, fieldnames=HEADERS)
         writer.writerow(totals)
     logger.info(f"\t✔️  Appended scenario totals to {TOTALS_FILEPATH}")
-
-def save_extracted_to_config(files_data, names, raw_attributes):
-    utils.set_raw_files_data(files_data)
-    logger.debug(f"\t✔️  Set raw files data: {utils.get_raw_files_data()}")
-    utils.set_scenario_names(names)
-    logger.debug(f"\t✔️  Set scenario names: {utils.get_scenario_names()}")
-    utils.set_raw_attributes(raw_attributes)
-    logger.debug(f"\t✔️ Set raw attributes data by scenario: {utils.get_raw_attributes()}")
 
 
 """

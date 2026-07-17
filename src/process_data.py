@@ -13,11 +13,12 @@ logger = None
 """
 Loads extracted data, inverts cost criteria, and applies L2 normalization
 """
-def process_data(use_config=False):
-    scenarios, raw_values = load_raw_values(use_config)
+def process_data(extracted_data):
+    scenarios = extracted_data["scenario_names"]
+    raw_values = extracted_data["attributes_data"]
     if (not is_load_successful(scenarios, raw_values)):
-        raise RuntimeException("Expected data to be saved before processing data. Rerun with -x")
-    validate_attributes_matrix(raw_values)
+        raise ValueError(f"Error using extracted scenario data. \nscenarios: {scenarios} \nraw_values: {raw_values}")
+    validate_attributes_matrix(raw_values, scenarios)
 
     # Normalize attributes
     attributes_norm = normalize_attributes(raw_values, scenarios)
@@ -57,7 +58,7 @@ def process_data(use_config=False):
 def normalize_attributes(raw_values, scenarios):
     attributes_matrix = invert_costs(raw_values);
     attributes_norm = l2_norm(attributes_matrix)
-    validate_attributes_matrix(attributes_norm)
+    validate_attributes_matrix(attributes_norm, scenarios)
     set_attributes_norm(attributes_norm, scenarios)
     return attributes_norm
 

@@ -276,17 +276,16 @@ def plot_scores(scenario_scores, show, compact):
 
 
 def plot_score_labels(max_score):
-    plt.figure(figsize=(HEIGHT * 0.75, HEIGHT * 0.5))
+    plt.figure(figsize=(HEIGHT, HEIGHT * 0.7))
     plt.ylim(-max_score * 1.55, max_score * 1.55)
     plt.ylabel('Composite Score', fontweight='bold')
     plt.xticks(rotation=ROTATION, ha='right')
 
 
 
-def plot_score_bars(scenarios, scores, max_score):
+def plot_score_bars(short_names, scores, max_score):
     norm = mcolors.Normalize(vmin=-max_score * 1.5, vmax=max_score * 1.5)
     bar_colors = [CMAP(norm(score)) for score in scores]
-    short_names = scenarios
     bars = plt.bar(short_names, scores, color=bar_colors, edgecolor=EDGE_COLOR, linewidth=LINE_WIDTH, alpha=BAR_ALPHA)
     plt.axhline(0, color=AX_COLOR, linestyle='-', linewidth=LINE_WIDTH)
 
