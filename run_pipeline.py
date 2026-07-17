@@ -8,12 +8,6 @@ from src.process_data import *
 from src.analyze_data import *
 from src.sensitivity import init_sensitivity, run_sensitivity_analysis
 
-'''
-Assumptions
-- No more than 9 scenarios total (sorting is alpha, not based on the number suffix)
--
-'''
-
 
 '''
     Run the pipeline by calling 'python3 run_pipeline.py'
@@ -24,10 +18,8 @@ def run_full_pipeline(args, logger):
         use_config = extract_data(force_extract=True)   # Loading from saved data is buggy
         process_data(use_config)
         analyze_data(args.show, args.compact)
-
         logger.warning("🎉 Data pipeline completed successfully.")
         logger.warning(f"📁 See data and analysis in {SAVE_DIR}\n")
-
     except Exception as e:
         log_failure(e, logger)
     finally:
