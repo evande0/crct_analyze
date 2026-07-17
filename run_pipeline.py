@@ -17,7 +17,7 @@ def run_full_pipeline(args, logger):
     try:
         extracted_data_pkg = extract_all_data(args.folder)
         processed_data_pkg = process_data(extracted_data_pkg)
-        analyze_data(args.show, args.compact)
+        analyze_data(processed_data_pkg, args.show, args.compact)
         logger.warning("🎉 Data pipeline completed successfully.")
         logger.warning(f"📁 See data and analysis in {SAVE_DIR}\n")
         if (args.sensitivity):

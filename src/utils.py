@@ -163,20 +163,7 @@ def get_attributes_norm(with_names=False):
         return A_norm
 
 """ Weighted attributes """
-def set_weighted_attributes(A_weight, scenarios):
-    sorted_attributes = sorted(
-        zip(scenarios, A_weight),
-        key=lambda x: x[0]
-    )
-    config.weighted_attributes = sorted_attributes
-    config.logger.debug(f"\t✔️  Set weight_attributes: {A_weight}")
 
-def get_weighted_attributes(with_names=False):
-    scenarios, sorted_weighted_attr = zip(*config.weighted_attributes)
-    if with_names:
-        return scenarios, sorted_weighted_attr
-    else:
-        return sorted_weighted_attr
 
 """ Sorted Scores """
 def set_sorted_scenario_scores(new_sorted_scores):
@@ -287,18 +274,18 @@ def write_scores_to_csv(filepath, scenario_scores):
         for scenario, score in scenario_scores:
             writer.writerow([scenario, round(float(score), 4)])
     config.logger.debug(f"\t✔️  Weighted scores written to:\n\t{output_filepath}")
-#
-# """Load totals from config file or CSV. Returns None if no data is saved"""
-# def load_raw_values(use_config=False):
-#     return load_config_totals()
-#
-#
-# """Load totals from config file. Assumes extract_data ran before process_data in pipeline"""
-# def load_config_totals():
-#     config.logger.debug("...Loading raw values from config")
-#     names = get_scenario_names()
-#     raw_values = get_raw_attributes()
-#     return names, raw_values
+
+"""Load totals from config file or CSV. Returns None if no data is saved"""
+def load_raw_values(use_config=False):
+    return load_config_totals()
+
+
+"""Load totals from config file. Assumes extract_data ran before process_data in pipeline"""
+def load_config_totals():
+    config.logger.debug("...Loading raw values from config")
+    names = get_scenario_names()
+    raw_values = get_raw_attributes()
+    return names, raw_values
 
 
 def load_csv_totals():
@@ -387,17 +374,16 @@ def validate_weights():
         config.logger.debug(f"...{attr}: {weight}")
     return True
 
-def validate_attributes_matrix(A, scenario_names):
+def validate_attributes_matrix(A, num_scenarios):
     if A is None or len(A) == 0:
         config.logger.error("...ERROR: Attributes matrix is empty")
         raise ValueError("Attributes matrix is empty")
     shape = A.shape
     num_attr = len(config.ATTRIBUTES_LIST)
-    num_scenarios = len(scenario_names)
     if shape[0] != num_scenarios:
-        config.logger.error("...ERROR: Attributes matrix has {shape[0]} but expected {num_scenarios}")
+        config.logger.error(f"...ERROR: Attributes matrix has {shape[0]} but expected {num_scenarios}")
         raise ValueError("Attributes matrix does not have the expected dimensions.")
     if shape[1] != num_attr:
-        config.logger.error("...ERROR: Attributes matrix has {num_cols} but expected {num_attr}")
+        config.logger.error(f"...ERROR: Attributes matrix has {num_cols} but expected {num_attr}")
         raise ValueError("Attributes matrix does not have the expected dimensions.")
     return True
