@@ -170,7 +170,7 @@ def load_attr_data(pipeline):
     else:
         init_for_extract()
         scenario_names, attributes_raw = extract_all_data(PROJ_DIR)
-    attributes_norm = proc.normalize_attributes(attributes_raw)
+    attributes_norm = proc.normalize_attributes(attributes_raw, scenario_names)
 
 def init_for_extract():
     utils.create_dirs(sens=True, processed=False, png=False)
@@ -181,7 +181,7 @@ def init_for_extract():
 def set_baseline_winner():
     global baseline_winner
     logger.info("...Computing baseline scores using even weights")
-    baseline_scores = proc.compute_weighted_scores(attributes_norm, FLAT)
+    baseline_scores = proc.compute_weighted_scores(attributes_norm, WEIGHT_OPTS["FLAT"])
     baseline_ranking = [scenario_names[idx] for idx in np.argsort(baseline_scores)[::-1]]
     logger.info(f"\t✔️  Computed baseline ranking: {baseline_ranking}")
     baseline_winner = baseline_ranking[0]
