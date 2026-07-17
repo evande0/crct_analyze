@@ -1,0 +1,36 @@
+# Project Configuration - Edit me!
+
+paths: 
+  json_dir: "data/project_json" # Absolute or relative path location of CRCT project JSON files
+
+
+analysis:
+  weights_selection: "DEFAULT" # Options: DEFAULT, FLAT, CUSTOM1, CUSTOM2
+  sort_by: "NAME" # Options: NAME, SCORE_ASC, SCORE_DESC
+ 
+  
+weights:
+  # Attribute Order:
+  # ConstructionCost, MaintenanceCost, StorageCapacity, Groundwater Recharge, Evapotranspiration, TempReduction, NutrientReduction, PathogenReduction, AdsorbingPollutants
+  DEFAULT: [0.20, 0.20, 0.20, 0.10, 0.10, 0.05, 0.05, 0.05, 0.05]
+  FLAT: [0.11111, 0.11111, 0.11111, 0.11111, 0.11111, 0.11111, 0.11111, 0.11111, 0.11111]
+  CUSTOM1: [0.11111, 0.11111, 0.11111, 0.11111, 0.11111, 0.11111, 0.11111, 0.11111, 0.11111]
+  CUSTOM2: [0.11111, 0.11111, 0.11111, 0.11111, 0.11111, 0.11111, 0.11111, 0.11111, 0.11111] 
+  
+  
+score_sort:
+  NAME: 0  # Default
+  SCORE_ASC: 1
+  SCORE_DESC: 2 
+  
+
+# Single-criterion sensitivity analysis
+sensitivity:
+  step_size: 0.05 # Step size to increment target criterion
+
+  
+logger: 
+  max_size_mb: 2    # Max logfile size in megabytes
+  max_backups: 100  # After reaching max backup log files, the oldest logs will be overwritten
+  max_warn_threshold: 97 # Set to -1 to disable checking 
+
