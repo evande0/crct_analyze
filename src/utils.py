@@ -256,13 +256,11 @@ def load_csv_totals():
 
     return names, attributes
 
-
-def is_load_successful(names, raw_values):
-    if names is None or raw_values is None:
-        config.logger.info(f"❓Failed to load raw data")
-        return False
-    config.logger.info(f"\t✔️  Successfully loaded raw data")
-    return True
+def is_none(args):
+    for arg in args:
+        if arg is None:
+            return True
+    return False
 
 
 def save_png(file_name, save_dir):
@@ -320,7 +318,7 @@ def validate_weights():
     return True
 
 
-def validate_attributes_matrix(A, num_scenarios):
+def validate_attr_matrix(A, num_scenarios):
     if A is None or len(A) == 0:
         config.logger.error("...ERROR: Attributes matrix is empty")
         raise ValueError("Attributes matrix is empty")

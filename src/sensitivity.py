@@ -1,13 +1,15 @@
-import os
-import argparse
-import numpy as np
 import csv
-from matplotlib.patches import Patch
+import os
+
 import matplotlib.pyplot as plt
-from config import *
-import src.utils as utils
-from src.extract_data import init_extract, extract_data
+import numpy as np
 import src.process_data as proc
+import src.utils as utils
+
+from config import ATTRIBUTES_LIST, NON_TARGET_STEP_SIZE, SENS_DIR, SENS_FILEPATH, TARGET_STEP_SIZE, WEIGHT_OPTS
+from matplotlib.patches import Patch
+
+
 
 logger = None
 scenario_names = None
@@ -186,16 +188,3 @@ def init_writer(csvfile):
     writer = csv.writer(csvfile)
     writer.writerow(["TargetAttr", "TargetWeight", "RankReversed", "NewWinner", "Spread"])
     return writer
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run independent criteria sensitivity analysis sweeps.")
-    parser.add_argument("-s", "--step", type=float, default=TARGET_STEP_SIZE, help="Weight perturbation increment value (defaults to TARGET_STEP_SIZE in config.py)")
-    parser.add_argument("-v", "--verbose", action="store_true", help=HELP_VERBOSE)
-    parser.add_argument("-d", "--debug", action="store_true", help=HELP_DEBUG)
-    parser.add_argument("-q", "--quiet", action="store_true", help=HELP_QUIET)
-    args = parser.parse_args()
-
-    init_sensitivity(args, pipeline=False)
-    logger.debug(f"\nArgs: {args}\n")
-
-    run_sensitivity_analysis(step_size=args.step)

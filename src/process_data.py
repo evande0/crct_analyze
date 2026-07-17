@@ -1,11 +1,14 @@
-import csv
-import os
 import argparse
-import numpy as np
-from datetime import datetime
+import csv
+import config
+import os
+
 import matplotlib.pyplot as plt
-from config import *
-from src.utils import *
+import numpy as np
+
+from datetime import datetime
+from src.utils import get_logger, is_none, validate_attr_matrix, validate_weights, write_scores_to_csv
+
 
 logger = None
 
@@ -16,13 +19,13 @@ Loads extracted data, inverts cost criteria, and applies L2 normalization
 def process_data(extracted_data):
     scenarios = extracted_data["scenario_names"]
     raw_values = extracted_data["attributes_data"]
-    if (not is_load_successful(scenarios, raw_values)):
+    if (is_none([scenarios, raw_values])):
         raise ValueError(f"Error using extracted scenario data. \nscenarios: {scenarios} \nraw_values: {raw_values}")
 
     # Normalize attributes
     attributes_norm = normalize_attributes(raw_values)
-    validate_attributes_matrix(attributes_norm, len(scenarios))
-    np.savetxt(f"{PROCESSED_DIR}/attributes_norm_l2.csv", attributes_norm, delimiter=',', fmt='%10.5f')
+    validate_attr_matrix(attributes_norm, len(scenarios))
+    np.savetxt(f"{config.PROCESSED_DIR}/attributes_norm_l2.csv", attributes_norm, delimiter=',', fmt='%10.5f')
 
     # Validate weights vector
     validate_weights();
@@ -30,7 +33,7 @@ def process_data(extracted_data):
 
     # Compute weighted attributes
     attributes_wtd = np.round(attributes_norm * config.WEIGHTS, 10)
-    np.savetxt(f"{PROCESSED_DIR}/attributes_weighted.csv", attributes_wtd, delimiter=',', fmt='%10.5f')
+    np.savetxt(f"{config.PROCESSED_DIR}/attributes_weighted.csv", attributes_wtd, delimiter=',', fmt='%10.5f')
 
     # Compute scores
     logger.debug("⏳Computing weighted scores")
@@ -42,7 +45,7 @@ def process_data(extracted_data):
     # Sort results
     sorted_scenario_scores = sort_scores(zip(scenarios[1:], scores[1:]))
     print_scenario_scores(sorted_scenario_scores)
-    write_scores_to_csv(PROCESSED_DIR, sorted_scenario_scores)
+    write_scores_to_csv(config.PROCESSED_DIR, sorted_scenario_scores)
 
     logger.warning(f"✅ Processing complete.")
     return {"scenario_names": scenarios, "attributes_norm": attributes_norm, "attributes_wtd": attributes_wtd, "sorted_results": sorted_scenario_scores}
@@ -93,8 +96,8 @@ def init_process():
 -------------------------"""
 
 def invert_costs(matrix):
-    construction_idx = ATTRIBUTES_LIST.index("ConstructionCost")
-    maintenance_idx = ATTRIBUTES_LIST.index("MaintenanceCost")
+    construction_idx = config.ATTRIBUTES_LIST.index("ConstructionCost")
+    maintenance_idx = config.ATTRIBUTES_LIST.index("MaintenanceCost")
     A = matrix.copy()
     A[:, construction_idx] = -A[:, construction_idx]
     A[:, maintenance_idx] = -A[:, maintenance_idx]
@@ -108,12 +111,12 @@ def compute_weighted_scores(A_norm, weights):
         return None
 
 def sort_scores(scenario_scores):
-    if SORT_IDX == 0:
+    if config.SORT_IDX == 0:
         logger.debug(f"\t✔️  Sorted by Scenario name")
-    elif SORT_IDX == 1:
+    elif config.SORT_IDX == 1:
         logger.debug(f"\t✔️  Sorted by Score (ascending)")
         return sorted(scenario_scores, key=lambda x: x[1], reverse=True)
-    elif SORT_IDX == 2:
+    elif config.SORT_IDX == 2:
         logger.debug(f"\t✔️  Sorted by Score (descending)")
         return sorted(scenario_scores, key=lambda x: x[1])
     else:

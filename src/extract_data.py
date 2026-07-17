@@ -1,18 +1,22 @@
-import json
-import csv
-import os
-import sys
 import argparse
-from datetime import datetime
-from config import *
+import csv
 import glob
-from pathlib import Path
+import json
 import itertools
-import src.utils as utils
+import os
 import re
+import sys
+
+import numpy as np
+import src.utils as utils
+
+from config import ATTRIBUTES_LIST, FIELD_MAP, HEADERS, TOTALS_FILEPATH
+from datetime import datetime
+from pathlib import Path
 
 
 logger = None
+
 
 """
 Extracts area data from a Climate Resilient Cities Tool (CRCTool) project file
