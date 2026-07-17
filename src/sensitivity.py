@@ -1,13 +1,15 @@
-import os
-import argparse
-import numpy as np
 import csv
-from matplotlib.patches import Patch
+import os
+
 import matplotlib.pyplot as plt
-from config import *
-import src.utils as utils
-from src.extract_data import init_extract, extract_all_data
+import numpy as np
 import src.process_data as proc
+import src.utils as utils
+
+from config import ATTRIBUTES_LIST, NON_TARGET_STEP_SIZE, SENS_DIR, SENS_FILEPATH, TARGET_STEP_SIZE, WEIGHT_OPTS
+from matplotlib.patches import Patch
+
+
 
 logger = None
 scenario_names = None
@@ -21,9 +23,9 @@ base_weights = None
 Run sensitivity analysis
 
 """
-def run_sensitivity_analysis(step_size=TARGET_STEP_SIZE, pipeline=False):
+def run_sensitivity_analysis(data_pkg, step_size=TARGET_STEP_SIZE):
     logger.warning(f"⏳ Starting Criteria Sensitivity Analysis (Step Size: {TARGET_STEP_SIZE})")
-    load_data(pipeline)
+    load_data(data_pkg)
     with open(SENS_FILEPATH, "w", newline="", encoding="utf-8") as csvfile:
         sweep_attribute_weights(init_writer(csvfile), attributes_norm)
 
@@ -144,12 +146,7 @@ def save_plot_png(file_name, save_path):
 """
 Initialize sensitivity analysis
 """
-def init_sensitivity(args, pipeline=False):
-    init_logger(args)
-    if not pipeline:
-        utils.create_dirs(png=False, processed=False, sens=True)
-
-def init_logger(args):
+def init_sensitivity(args):
     global logger
     logger = utils.get_logger()
     if logger is None:
@@ -157,26 +154,14 @@ def init_logger(args):
         utils.set_logger(logger)
     logger.debug("Logger initiatied")
 
-def load_data(pipeline):
-    load_attr_data(pipeline)
+def load_data(data_pkg):
+    global scenario_names, attributes_raw, attributes_norm
+    scenario_names = data_pkg["scenario_names"]
+    attributes_raw = data_pkg["attributes_raw"]
+    attributes_norm = data_pkg["attributes_norm"]
     set_baseline_winner()
     set_base_weights()
 
-def load_attr_data(pipeline):
-    global scenario_names, attributes_raw, attributes_norm
-    if (pipeline): # If run from the pipeline, values should be saved in the config
-        scenario_names = utils.get_scenario_names()
-        attributes_raw = utils.get_raw_attributes()
-    else:
-        init_for_extract()
-        scenario_names, attributes_raw = extract_all_data(PROJ_DIR)
-    attributes_norm = proc.normalize_attributes(attributes_raw, scenario_names)
-
-def init_for_extract():
-    utils.create_dirs(sens=True, processed=False, png=False)
-    utils.setup_totals_file()
-    init_extract()
-    proc.init_process()
 
 def set_baseline_winner():
     global baseline_winner
@@ -203,16 +188,3 @@ def init_writer(csvfile):
     writer = csv.writer(csvfile)
     writer.writerow(["TargetAttr", "TargetWeight", "RankReversed", "NewWinner", "Spread"])
     return writer
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run independent criteria sensitivity analysis sweeps.")
-    parser.add_argument("-s", "--step", type=float, default=TARGET_STEP_SIZE, help="Weight perturbation increment value (defaults to TARGET_STEP_SIZE in config.py)")
-    parser.add_argument("-v", "--verbose", action="store_true", help=HELP_VERBOSE)
-    parser.add_argument("-d", "--debug", action="store_true", help=HELP_DEBUG)
-    parser.add_argument("-q", "--quiet", action="store_true", help=HELP_QUIET)
-    args = parser.parse_args()
-
-    init_sensitivity(args, pipeline=False)
-    logger.debug(f"\nArgs: {args}\n")
-
-    run_sensitivity_analysis(step_size=args.step)
