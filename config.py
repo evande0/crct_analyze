@@ -80,16 +80,16 @@ LOG_CONSOLE_FORMAT = "[%(levelname)s] %(filename)s, %(lineno)d: %(message)s"
 
 
 # Viz Defaults
-WIDTH = 7.2
-HEIGHT = 4.5
+WIDTH = 7
+HEIGHT = 4
 TITLE_SIZE = 13
 LABEL_SIZE = 12
 TICK_SIZE = 11
 VALUE_SIZE = 10
 ROTATION = 30
-BAR_HEIGHT = 1.0
+BAR_HEIGHT = 0.85
 LINE_WIDTH = 0.25
-GRID_ALPHA = 0.5
+GRID_ALPHA = 0.4
 BAR_ALPHA = 0.9
 PADDING = 0.05
 ANCHOR = (0.5, -0.15)
@@ -98,6 +98,8 @@ AX_COLOR = '#333333'
 VALUE_DARK = '#222222'
 VALUE_LIGHT = '#FFFFFF'
 COLOR_MAP = "coolwarm_r"
+COMPACT_FONT_SIZE = 8
+COMPACT_SCALE = 0.75         # Scales figure dimensions when using -c compact flag
 
 
 # Help Strings

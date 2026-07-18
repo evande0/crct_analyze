@@ -3,7 +3,7 @@ from datetime import datetime
 
 import config
 
-from src.utils import init_logging, set_logger, create_dirs, set_weights, check_log_limits, log_pipeline_failure
+from src.utils import init_logging, set_logger, create_dirs, scale_viz, set_weights, check_log_limits, log_pipeline_failure
 from src.extract_data import init_extract, extract_data
 from src.process_data import init_process, process_data
 from src.analyze_data import init_analyze, analyze_data
@@ -50,6 +50,7 @@ def init_pipeline(args, logger):
     init_process()
     init_analyze()
     set_weights(args.weights)
+    scale_viz(args.compact)
     if args.sensitivity:
         init_sensitivity(args)
 

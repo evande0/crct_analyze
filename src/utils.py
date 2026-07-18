@@ -51,6 +51,19 @@ def set_weights(weight_arg):
     else:
         config.logger.debug(f"Using weight scheme defined in config.yaml: {config.WEIGHT_SCHEME}")
 
+def scale_viz(compact):
+    if compact:
+        config.HEIGHT *= config.COMPACT_SCALE
+        config.WIDTH *= config.COMPACT_SCALE
+        config.BAR_HEIGHT*= config.COMPACT_SCALE
+        config.LINE_WIDTH *= config.COMPACT_SCALE
+        config.PADDING *= config.COMPACT_SCALE
+
+        config.TITLE_SIZE = config.COMPACT_FONT_SIZE
+        config.LABEL_SIZE = config.COMPACT_FONT_SIZE
+        config.TICK_SIZE = config.COMPACT_FONT_SIZE
+        config.VALUE_SIZE = config.COMPACT_FONT_SIZE
+
 
 """-------------------------------
     Logging
